@@ -30,7 +30,7 @@ export default function DashboardLayout({
           >
             <Logo className="h-6 w-6 text-primary" />
             <span className="duration-200 group-data-[collapsible=icon]:opacity-0">
-              TraceRight
+              TraceRight.ai
             </span>
           </Link>
         </SidebarHeader>

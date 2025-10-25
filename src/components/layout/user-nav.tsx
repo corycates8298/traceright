@@ -41,9 +41,9 @@ export function UserNav() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">TraceRight Admin</p>
+            <p className="text-sm font-medium leading-none">TraceRight.ai Admin</p>
             <p className="text-xs leading-none text-muted-foreground">
-              admin@traceright.com
+              admin@traceright.ai
             </p>
           </div>
         </DropdownMenuLabel>

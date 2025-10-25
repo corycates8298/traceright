@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'TraceRight',
+  title: 'TraceRight.ai',
   description: 'An intelligent supply chain management platform.',
 };
 
