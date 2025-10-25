@@ -1,1 +1,8 @@
-// Flows will be imported for their side effects in this file.
+import { config } from 'dotenv';
+config();
+
+import '@/ai/flows/ai-reporting-hub.ts';
+import '@/ai/flows/ai-powered-chatbot.ts';
+import '@/ai/flows/ml-intelligence-dashboard.ts';
+import '@/ai/flows/ai-visual-inspection.ts';
+import '@/ai/flows/proactive-delay-agent.ts';
