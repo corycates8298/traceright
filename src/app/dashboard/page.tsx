@@ -1,11 +1,9 @@
 import {
-  BarChart,
-  Bot,
-  BrainCircuit,
+  GalleryHorizontal,
+  Users,
+  Package,
   FileText,
-  Map,
-  ScanLine,
-  Truck,
+  Settings,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -20,46 +18,34 @@ import { Header } from '@/components/layout/header';
 
 const widgetItems: DashboardWidgetItem[] = [
   {
-    title: 'Live Logistics',
-    description: 'Real-time map of all in-transit orders.',
-    href: '/dashboard/map',
-    icon: Map,
+    title: 'Assets',
+    description: 'Manage and track all your assets',
+    href: '/dashboard/assets',
+    icon: GalleryHorizontal,
   },
   {
-    title: 'Supplier Scorecards',
-    description: 'Manage supplier details and performance.',
-    href: '/dashboard/suppliers',
-    icon: Truck,
+    title: 'Inventory',
+    description: 'Oversee your inventory levels',
+    href: '/dashboard/inventory',
+    icon: Package,
   },
   {
-    title: 'AI Reporting Hub',
-    description: 'Ask questions about compliance documents.',
-    href: '/dashboard/reporting',
+    title: 'Users',
+    description: 'Manage user accounts and permissions',
+    href: '/dashboard/users',
+    icon: Users,
+  },
+  {
+    title: 'Reports',
+    description: 'Generate and view system reports',
+    href: '/dashboard/reports',
     icon: FileText,
   },
   {
-    title: 'AI Visual Inspection',
-    description: 'Detect damage and verify delivery labels.',
-    href: '/dashboard/inspection',
-    icon: ScanLine,
-  },
-  {
-    title: 'Demand Forecasting',
-    description: 'Predict future material needs with AI.',
-    href: '/dashboard/forecasting',
-    icon: BarChart,
-  },
-  {
-    title: 'Proactive Agent',
-    description: 'Monitor delays and stock levels automatically.',
-    href: '/dashboard/proactive-agent',
-    icon: Bot,
-  },
-  {
-    title: 'ML Intelligence',
-    description: 'Visualize performance of AI models.',
-    href: '/dashboard/ml-intelligence',
-    icon: BrainCircuit,
+    title: 'Settings',
+    description: 'Configure application settings',
+    href: '/dashboard/settings',
+    icon: Settings,
   },
 ];
 

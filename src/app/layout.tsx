@@ -3,7 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 
 export const metadata: Metadata = {
-  title: 'Supply Chain Command',
+  title: 'TraceRight',
   description: 'An intelligent supply chain management platform.',
 };
 
