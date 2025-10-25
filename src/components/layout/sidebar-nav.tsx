@@ -1,12 +1,14 @@
 'use client';
 
 import {
-  GalleryHorizontal,
   Home,
+  Map,
   Users,
-  Package,
+  TrendingUp,
   FileText,
-  Settings,
+  ScanSearch,
+  BrainCircuit,
+  Bot,
   type LucideIcon,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
@@ -25,11 +27,13 @@ type NavLink = {
 
 const navLinks: NavLink[] = [
   { href: '/dashboard', label: 'Dashboard', icon: Home },
-  { href: '/dashboard/assets', label: 'Assets', icon: GalleryHorizontal },
-  { href: '/dashboard/inventory', label: 'Inventory', icon: Package },
-  { href: '/dashboard/users', label: 'Users', icon: Users },
-  { href: '/dashboard/reports', label: 'Reports', icon: FileText },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+  { href: '/dashboard/map', label: 'Live Logistics', icon: Map },
+  { href: '/dashboard/suppliers', label: 'Suppliers', icon: Users },
+  { href: '/dashboard/forecasting', label: 'Forecasting', icon: TrendingUp },
+  { href: '/dashboard/reporting', label: 'Reporting', icon: FileText },
+  { href: '/dashboard/inspection', label: 'Inspection', icon: ScanSearch },
+  { href: '/dashboard/ml-intelligence', label: 'ML Intelligence', icon: BrainCircuit },
+  { href: '/dashboard/proactive-agent', label: 'Proactive Agent', icon: Bot },
 ];
 
 export function SidebarNav() {

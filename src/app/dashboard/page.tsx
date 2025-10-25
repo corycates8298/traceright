@@ -1,9 +1,11 @@
 import {
-  GalleryHorizontal,
+  Map,
   Users,
-  Package,
+  TrendingUp,
   FileText,
-  Settings,
+  ScanSearch,
+  BrainCircuit,
+  Bot,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -18,34 +20,46 @@ import { Header } from '@/components/layout/header';
 
 const widgetItems: DashboardWidgetItem[] = [
   {
-    title: 'Assets',
-    description: 'Manage and track all your assets',
-    href: '/dashboard/assets',
-    icon: GalleryHorizontal,
+    title: 'Live Logistics Map',
+    description: 'Real-time tracking of shipments',
+    href: '/dashboard/map',
+    icon: Map,
   },
   {
-    title: 'Inventory',
-    description: 'Oversee your inventory levels',
-    href: '/dashboard/inventory',
-    icon: Package,
-  },
-  {
-    title: 'Users',
-    description: 'Manage user accounts and permissions',
-    href: '/dashboard/users',
+    title: 'Supplier Scorecards',
+    description: 'Monitor and evaluate supplier performance',
+    href: '/dashboard/suppliers',
     icon: Users,
   },
   {
-    title: 'Reports',
-    description: 'Generate and view system reports',
-    href: '/dashboard/reports',
+    title: 'Demand Forecasting',
+    description: 'Predict future demand with AI',
+    href: '/dashboard/forecasting',
+    icon: TrendingUp,
+  },
+  {
+    title: 'AI Reporting Hub',
+    description: 'Ask questions about your documents',
+    href: '/dashboard/reporting',
     icon: FileText,
   },
   {
-    title: 'Settings',
-    description: 'Configure application settings',
-    href: '/dashboard/settings',
-    icon: Settings,
+    title: 'AI Visual Inspection',
+    description: 'Automated damage detection',
+    href: '/dashboard/inspection',
+    icon: ScanSearch,
+  },
+  {
+    title: 'ML Intelligence',
+    description: 'Insights from your ML models',
+    href: '/dashboard/ml-intelligence',
+    icon: BrainCircuit,
+  },
+  {
+    title: 'Proactive Agent',
+    description: 'Monitors for delays and stock issues',
+    href: '/dashboard/proactive-agent',
+    icon: Bot,
   },
 ];
 
