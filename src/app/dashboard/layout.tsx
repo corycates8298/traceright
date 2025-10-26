@@ -39,7 +39,6 @@ export default function DashboardLayout({
         </SidebarContent>
       </Sidebar>
       <SidebarInset>{children}</SidebarInset>
-      <Chatbot />
     </SidebarProvider>
   );
 }
