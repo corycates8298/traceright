@@ -8,10 +8,12 @@ import type { Layout } from '@/types';
 import AnalystView from '@/components/dashboard/analyst-view';
 import ExecutiveView from '@/components/dashboard/executive-view';
 import WarehouseOpsView from '@/components/dashboard/warehouse-ops-view';
+import { useTheme } from '@/context/ThemeContext';
 
 
 export default function DashboardPage() {
   const [layout, setLayout] = useState<Layout>('analyst');
+  const { open, setOpen } = useTheme();
 
   const renderLayout = () => {
     switch (layout) {
@@ -65,7 +67,7 @@ export default function DashboardPage() {
             <Button variant="ghost" size="sm">
               Custom
             </Button>
-            <Button>
+            <Button onClick={() => setOpen(true)}>
               <Settings2 className="mr-2 h-4 w-4" />
               Customize
             </Button>

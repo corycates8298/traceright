@@ -8,6 +8,8 @@ import { Logo } from '@/components/icons';
 import { SidebarNav } from '@/components/layout/sidebar-nav';
 import { Chatbot } from '@/components/chatbot';
 import Link from 'next/link';
+import { ThemeCustomizer } from '@/components/theme/ThemeCustomizer';
+
 
 export default function DashboardLayout({
   children,
@@ -52,6 +54,7 @@ export default function DashboardLayout({
       <SidebarInset>
         {children}
         <Chatbot />
+        <ThemeCustomizer />
       </SidebarInset>
     </SidebarProvider>
   );
