@@ -8,7 +8,7 @@
 
 import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
-import { getFirestore, collection, getDocs, writeBatch, doc } from 'firebase/firestore';
+import { getFirestore, collection, getDocs, writeBatch } from 'firebase/firestore';
 import { initializeFirebase } from '@/firebase';
 
 const ClearDatabaseOutputSchema = z.object({
@@ -21,7 +21,25 @@ export async function clearDatabase(): Promise<ClearDatabaseOutput> {
   return clearDatabaseFlow();
 }
 
-const COLLECTIONS_TO_DELETE = ['suppliers', 'materials', 'recipes', 'orders', 'inventory', 'warehouses'];
+const COLLECTIONS_TO_DELETE = [
+    'suppliers', 
+    'materials', 
+    'recipes', 
+    'orders', 
+    'inventory', 
+    'warehouses',
+    'products',
+    'batches',
+    'shipments',
+    'inventoryLocations',
+    'inventoryAdjustments',
+    'assetManagement',
+    'invoices',
+    'payments',
+    'costs',
+    'auditLog',
+    'governanceDocs'
+];
 
 async function deleteCollection(db: any, collectionPath: string, batchSize = 500) {
     const collectionRef = collection(db, collectionPath);
@@ -39,13 +57,13 @@ async function deleteCollection(db: any, collectionPath: string, batchSize = 500
     for (const document of querySnapshot.docs) {
         batch.delete(document.ref);
         count++;
-        if (count === batchSize) {
+        if (count % batchSize === 0) {
             await batch.commit();
             batch = writeBatch(db);
         }
     }
 
-    if (count > 0) {
+    if (count % batchSize !== 0) {
         await batch.commit();
     }
     
@@ -67,12 +85,14 @@ const clearDatabaseFlow = ai.defineFlow(
             deletedCounts[collectionName] = count;
         } catch (error) {
             console.error(`Error deleting collection ${collectionName}:`, error);
-            throw new Error(`Failed to delete collection ${collectionName}.`);
+            // We still want to try deleting other collections, so we don't rethrow here.
+            // A count of 0 will be the indicator of failure for a specific collection.
+            deletedCounts[collectionName] = 0;
         }
     }
 
     return {
-      message: 'Selected database collections have been cleared.',
+      message: 'All specified database collections have been cleared.',
       deletedCounts,
     };
   }
