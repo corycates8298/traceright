@@ -36,7 +36,7 @@ export default function DashboardPage() {
   };
 
   const getButtonClass = (buttonLayout: Layout) => {
-    return layout === buttonLayout ? 'bg-primary/10 border-primary/50 text-primary' : '';
+    return layout === buttonLayout ? 'outline' : 'ghost';
   }
 
   return (
@@ -49,37 +49,33 @@ export default function DashboardPage() {
           </h2>
           <div className="flex flex-wrap items-center gap-2">
             <Button
-              variant={layout === 'analyst' ? 'outline' : 'ghost'}
+              variant={getButtonClass('analyst')}
               size="sm"
               onClick={() => setLayout('analyst')}
-              className={getButtonClass('analyst')}
             >
               <Eye className="mr-2 h-4 w-4" />
               Analyst View
             </Button>
             <Button
-              variant={layout === 'executive' ? 'outline' : 'ghost'}
+              variant={getButtonClass('executive')}
               size="sm"
               onClick={() => setLayout('executive')}
-               className={getButtonClass('executive')}
             >
               <Briefcase className="mr-2 h-4 w-4" />
               Executive Summary
             </Button>
             <Button
-              variant={layout === 'warehouse' ? 'outline' : 'ghost'}
+              variant={getButtonClass('warehouse')}
               size="sm"
               onClick={() => setLayout('warehouse')}
-               className={getButtonClass('warehouse')}
             >
               <CircleDotDashed className="mr-2 h-4 w-4" />
               Warehouse Ops
             </Button>
              <Button
-              variant={layout === 'custom' ? 'outline' : 'ghost'}
+              variant={getButtonClass('custom')}
               size="sm"
               onClick={() => setLayout('custom')}
-               className={getButtonClass('custom')}
             >
               <LayoutGrid className="mr-2 h-4 w-4" />
               Custom
