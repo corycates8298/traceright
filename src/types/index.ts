@@ -1,5 +1,7 @@
 import type { LucideIcon } from 'lucide-react';
 
+export type Layout = 'analyst' | 'executive' | 'warehouse';
+
 // Core Supply Chain & Flow
 export type Supplier = {
   id: string;
