@@ -43,7 +43,7 @@ export type Material = {
 export type Recipe = {
   id: string;
   name: string;
-  outputMaterialId: string; // doc ref to materials (for finished good)
+  productId: string; // doc ref to products (for finished good)
   outputQuantity: number;
   ingredients: {
     materialId: string; // doc ref to materials

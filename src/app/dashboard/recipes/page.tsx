@@ -36,10 +36,21 @@ export default function RecipesPage() {
   );
   const { data: materials } = useCollection<any>(materialsQuery);
 
+  const productsQuery = useMemoFirebase(
+    () => collection(firestore, 'products'),
+    [firestore]
+  );
+  const { data: products } = useCollection<any>(productsQuery);
+
   const materialsMap = useMemo(() => {
     if (!materials) return new Map();
     return new Map(materials.map(m => [m.id, m]));
   }, [materials]);
+
+  const productsMap = useMemo(() => {
+    if (!products) return new Map();
+    return new Map(products.map(p => [p.id, p]));
+  }, [products]);
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -74,7 +85,7 @@ export default function RecipesPage() {
                         <div className="mb-4">
                             <p className="font-semibold text-sm flex items-center gap-2">
                                 <Package className="h-4 w-4 text-muted-foreground"/>
-                                Output: {recipe.outputQuantity} x {materialsMap.get(recipe.outputMaterialId)?.name || 'Unknown Product'}
+                                Output: {recipe.outputQuantity} x {productsMap.get(recipe.productId)?.name || 'Unknown Product'}
                             </p>
                         </div>
                         <h4 className="font-semibold mb-2">Ingredients:</h4>
