@@ -2,16 +2,21 @@
 'use client';
 
 import React from 'react';
-import type { WidgetConfig } from '@/types';
+import type { WidgetConfig, WidgetType } from '@/types';
 import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
+import { Plus, GripVertical, X } from 'lucide-react';
 import KpiCard from './kpi-card';
 import RevenueChart from './revenue-chart';
 import OrderStatusChart from './order-status-chart';
 import WarehouseUtilization from './warehouse-utilization';
 import RecentActivity from './recent-activity';
-import { DollarSign } from 'lucide-react';
+import { DollarSign, CheckCircle, Truck, AlertTriangle } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
+import { cn } from '@/lib/utils';
+import {
+  Card,
+  CardHeader,
+} from '@/components/ui/card';
 
 interface CustomDashboardViewProps {
   widgets: WidgetConfig[];
@@ -41,6 +46,12 @@ export default function CustomDashboardView({
   setWidgets,
   setIsBuilderOpen,
 }: CustomDashboardViewProps) {
+
+  const removeWidget = (id: string) => {
+    setWidgets(prev => prev.filter(w => w.id !== id));
+  };
+
+
   if (widgets.length === 0) {
     return (
       <div className="flex items-center justify-center h-[60vh] border-2 border-dashed rounded-lg">
@@ -62,16 +73,42 @@ export default function CustomDashboardView({
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 auto-rows-min gap-6">
-      {widgets.map((widget) => {
+      {widgets.map((widget, index) => {
         const Component = componentMap[widget.type];
+        const props = placeholderProps[widget.type];
+        
+        // This is a simple way to create some variety in the placeholder KPI cards
+        if (widget.type === 'kpi-card' && index > 0) {
+            const kpiPlaceholders = [
+                { title: 'On-Time Delivery', value: '94.2%', change: '+0.5%', Icon: CheckCircle },
+                { title: 'Active Shipments', value: '3,284', change: '-2.5%', Icon: Truck },
+                { title: 'Delayed Orders', value: '47', change: '-23.1%', Icon: AlertTriangle },
+            ];
+            Object.assign(props, kpiPlaceholders[(index-1) % kpiPlaceholders.length]);
+        }
+
         return (
-          <div
+          <Card
             key={widget.id}
-            className="bg-card rounded-lg border shadow-sm p-4 relative group"
-            style={{ gridColumn: `span ${widget.gridConfig.w}` }}
+            style={{ 
+                gridColumn: `span ${Math.min(widget.gridConfig.w, 4)}`,
+            }}
+            className={cn(
+                "relative group/widget",
+                widget.type.includes('chart') ? 'row-span-2' : ''
+            )}
           >
-            {Component ? <Component {...placeholderProps[widget.type]} /> : <Skeleton className="h-full w-full" />}
-          </div>
+            <div className="absolute top-2 right-2 flex items-center gap-1 opacity-0 group-hover/widget:opacity-100 transition-opacity z-10">
+                 <Button variant="ghost" size="icon" className="h-7 w-7 cursor-grab">
+                    <GripVertical className="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeWidget(widget.id)}>
+                    <X className="h-4 w-4" />
+                </Button>
+            </div>
+            
+            {Component ? <Component {...props} /> : <Skeleton className="h-full w-full" />}
+          </Card>
         );
       })}
     </div>

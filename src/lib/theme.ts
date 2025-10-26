@@ -1,3 +1,4 @@
+
 export type Palette = {
   name: string;
   primary: string;
@@ -28,10 +29,10 @@ export type Pattern = {
 
 export const palettes: Palette[] = [
   {
-    name: 'Purple Dream',
-    primary: '260 85% 60%',
+    name: 'TraceRight Teal',
+    primary: '167 19% 56%',
     primaryForeground: '0 0% 100%',
-    swatches: ['#8A2BE2', '#9370DB', '#E6E6FA'],
+    swatches: ['#73A89A', '#84A176', '#F0F4F3'],
   },
   {
     name: 'Ocean Blue',

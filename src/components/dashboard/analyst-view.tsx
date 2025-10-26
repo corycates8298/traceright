@@ -1,3 +1,4 @@
+
 'use client';
 import KpiCard from './kpi-card';
 import RevenueChart from './revenue-chart';
@@ -20,22 +21,22 @@ const kpiData = [
 
 export default function AnalystView() {
   return (
-    <>
+    <div className="space-y-6">
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         {kpiData.map((kpi) => (
           <KpiCard key={kpi.title} {...kpi} />
         ))}
       </div>
 
-      <div className="grid gap-6 mt-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <RevenueChart className="lg:col-span-2" />
         <OrderStatusChart />
       </div>
 
-      <div className="grid gap-6 mt-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <WarehouseUtilization className="lg:col-span-2" />
         <RecentActivity />
       </div>
-    </>
+    </div>
   );
 }

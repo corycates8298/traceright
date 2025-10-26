@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useTheme } from '@/context/ThemeContext';
@@ -19,10 +20,10 @@ export function GradientSelector() {
               onClick={() => setGradient(gradient)}
               className={cn(
                 'p-3 rounded-lg border space-y-2 text-left',
-                isActive ? 'border-primary' : 'border-border'
+                isActive ? 'border-primary ring-2 ring-ring' : 'border-border'
               )}
             >
-              <div className="h-16 w-full rounded-md bg-gradient-to-r from-primary to-background" />
+              <div className="h-16 w-full rounded-md" style={{background: `linear-gradient(to right, hsl(var(--primary)), hsl(var(--background)))`}} />
               <p className="font-semibold text-sm">{gradient.name}</p>
               <p className="text-xs text-muted-foreground">{gradient.description}</p>
             </button>

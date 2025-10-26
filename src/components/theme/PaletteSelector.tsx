@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useTheme } from '@/context/ThemeContext';
@@ -20,7 +21,7 @@ export function PaletteSelector() {
               onClick={() => setPalette(palette)}
               className={cn(
                 'p-3 rounded-lg border space-y-2',
-                isActive ? 'border-primary' : 'border-border'
+                isActive ? 'border-primary ring-2 ring-ring' : 'border-border'
               )}
             >
               <div className="flex justify-between items-center">

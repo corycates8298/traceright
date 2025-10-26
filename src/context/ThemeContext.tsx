@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, {
@@ -22,6 +23,7 @@ import {
   patterns,
 } from '@/lib/theme';
 import { hslToHex } from '@/lib/utils';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 
 type BackgroundType = 'none' | 'solid' | 'gradient' | 'pattern';
 
@@ -55,6 +57,7 @@ type ThemeContextType = {
   setPatternOpacity: (opacity: number) => void;
   setEqualizerValue: (key: keyof EqualizerState, value: number) => void;
   resetEqualizer: () => void;
+  resetTheme: () => void;
   open: boolean;
   setOpen: (open: boolean) => void;
 };
@@ -69,8 +72,7 @@ const defaultEqualizerState: EqualizerState = {
   spread: 50,
 };
 
-export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-  const [theme, setTheme] = useState<ThemeState>({
+const defaultThemeState: ThemeState = {
     palette: palettes[0],
     font: fonts[0],
     gradient: gradients[0],
@@ -79,42 +81,39 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     pattern: patterns[0],
     patternOpacity: 20,
     equalizer: defaultEqualizerState,
-  });
+}
+
+export const ThemeProvider = ({ children }: { children: ReactNode }) => {
+  const [theme, setTheme] = useLocalStorage<ThemeState>('traceright-theme', defaultThemeState);
   const [open, setOpen] = useState(false);
 
   const setPalette = useCallback((palette: Palette) => {
     setTheme((prev) => ({ ...prev, palette }));
-    const root = document.documentElement;
-    root.style.setProperty('--primary', palette.primary);
-    root.style.setProperty('--primary-foreground', palette.primaryForeground);
-  }, []);
+  }, [setTheme]);
 
   const setFont = useCallback((font: Font) => {
     setTheme((prev) => ({ ...prev, font }));
-    const body = document.body;
-    body.className = body.className.split(' ').filter(c => !c.startsWith('font-')).join(' ');
-    body.classList.add(font.className);
-  }, []);
+  }, [setTheme]);
 
   const setGradient = useCallback((gradient: Gradient) => {
     setTheme((prev) => ({ ...prev, gradient }));
-  }, []);
+  }, [setTheme]);
 
   const setBackgroundType = useCallback((type: BackgroundType) => {
     setTheme((prev) => ({ ...prev, backgroundType: type }));
-  }, []);
+  }, [setTheme]);
 
   const setSolidColor = useCallback((color: SolidColor) => {
     setTheme((prev) => ({ ...prev, solidColor: color }));
-  }, []);
+  }, [setTheme]);
 
   const setPattern = useCallback((pattern: Pattern) => {
     setTheme((prev) => ({ ...prev, pattern }));
-  }, []);
+  }, [setTheme]);
 
   const setPatternOpacity = useCallback((opacity: number) => {
     setTheme((prev) => ({ ...prev, patternOpacity: opacity }));
-  }, []);
+  }, [setTheme]);
 
   const setEqualizerValue = useCallback(
     (key: keyof EqualizerState, value: number) => {
@@ -123,7 +122,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         equalizer: { ...prev.equalizer, [key]: value },
       }));
     },
-    []
+    [setTheme]
   );
 
   const resetEqualizer = useCallback(() => {
@@ -131,18 +130,30 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       ...prev,
       equalizer: defaultEqualizerState,
     }));
-  }, []);
+  }, [setTheme]);
+
+  const resetTheme = useCallback(() => {
+      setTheme(defaultThemeState);
+  }, [setTheme]);
 
   useEffect(() => {
     const root = document.documentElement;
     const body = document.body;
+
+    // Apply Palette
+    root.style.setProperty('--primary', theme.palette.primary);
+    root.style.setProperty('--primary-foreground', theme.palette.primaryForeground);
+
+    // Apply Font
+    document.body.classList.remove(...fonts.map(f => f.className));
+    document.body.classList.add(theme.font.className);
+
+    // Apply Background
     let backgroundStyle = '';
     const baseBackgroundColor = `hsl(var(--background))`;
-
+    
     // Always clear pattern classes first
-    patterns.forEach(p => {
-        body.classList.remove(`pattern-${p.name.toLowerCase()}`);
-    });
+    body.className = body.className.split(' ').filter(c => !c.startsWith('pattern-')).join(' ');
     body.style.setProperty('--pattern-opacity', '0');
 
 
@@ -201,6 +212,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       setPatternOpacity,
       setEqualizerValue,
       resetEqualizer,
+      resetTheme,
       open,
       setOpen,
     }),
@@ -215,6 +227,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
       setPatternOpacity,
       setEqualizerValue,
       resetEqualizer,
+      resetTheme,
       open,
     ]
   );

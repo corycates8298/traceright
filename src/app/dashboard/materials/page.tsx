@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -39,6 +40,8 @@ export default function MaterialsPage() {
     return new Map(suppliers.map(s => [s.id, s.name]));
   }, [suppliers]);
 
+  const isLoadingData = isLoading || !suppliers;
+
   return (
     <div className="flex min-h-screen w-full flex-col">
       <Header title="Materials" />
@@ -62,7 +65,7 @@ export default function MaterialsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading ? (
+                {isLoadingData ? (
                   Array.from({ length: 10 }).map((_, i) => (
                     <TableRow key={i}>
                       <TableCell><Skeleton className="h-5 w-32" /></TableCell>
@@ -85,7 +88,7 @@ export default function MaterialsPage() {
                 )}
               </TableBody>
             </Table>
-            {!isLoading && (!materials || materials.length === 0) && (
+            {!isLoadingData && (!materials || materials.length === 0) && (
                 <div className="text-center py-12 text-muted-foreground">
                     No materials found. Try seeding the database in the Admin panel.
                 </div>

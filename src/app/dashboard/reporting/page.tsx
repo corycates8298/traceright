@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -31,7 +32,7 @@ type GovernanceDoc = {
 
 export default function ReportingPage() {
   const [isLoading, setIsLoading] = useState(false);
-  const [query, setQuery] = useState('What is the procedure for handling damaged deliveries?');
+  const [queryText, setQueryText] = useState('What is the procedure for handling damaged deliveries?');
   const [result, setResult] = useState<AskAboutDocumentsOutput | null>(null);
   const { toast } = useToast();
   
@@ -44,7 +45,7 @@ export default function ReportingPage() {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (!query) {
+    if (!queryText) {
         toast({
             variant: 'destructive',
             title: 'Query cannot be empty.',
@@ -56,7 +57,7 @@ export default function ReportingPage() {
     setResult(null);
 
     try {
-      const response = await askAboutDocuments({ query });
+      const response = await askAboutDocuments({ query: queryText });
       setResult(response);
     } catch (error) {
       console.error('Error asking about documents:', error);
@@ -90,8 +91,8 @@ export default function ReportingPage() {
                     name="query"
                     placeholder="Ask a question about the documents..."
                     className="min-h-[100px]"
-                    value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    value={queryText}
+                    onChange={(e) => setQueryText(e.target.value)}
                   />
                 </div>
                 <Button type="submit" disabled={isLoading || isLoadingDocs} className="w-full">

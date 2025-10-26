@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -9,10 +10,10 @@ import {
 import { Progress } from '@/components/ui/progress';
 
 const warehouseData = [
-    { name: 'West Coast', usage: 85 },
-    { name: 'East Coast', usage: 92 },
-    { name: 'Midwest', usage: 78 },
-    { name: 'South', usage: 81 },
+    { name: 'West Coast Distribution Center', usage: 85 },
+    { name: 'East Coast Fulfillment Hub', usage: 92 },
+    { name: 'Midwest Regional Warehouse', usage: 78 },
+    { name: 'Southern Logistics Node', usage: 81 },
 ];
 
 export default function WarehouseUtilization({ className }: { className?: string }) {
@@ -20,7 +21,7 @@ export default function WarehouseUtilization({ className }: { className?: string
         <Card className={className}>
             <CardHeader>
                 <CardTitle>Warehouse Utilization</CardTitle>
-                <CardDescription>Capacity usage</CardDescription>
+                <CardDescription>Current storage capacity usage across all facilities</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                 {warehouseData.map(warehouse => (

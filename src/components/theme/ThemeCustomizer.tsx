@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -18,7 +19,7 @@ import { GradientEqualizer } from './GradientEqualizer';
 import { BackgroundSelector } from './BackgroundSelector';
 
 export function ThemeCustomizer() {
-  const { open, setOpen, resetEqualizer } = useTheme();
+  const { open, setOpen, resetEqualizer, resetTheme } = useTheme();
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -26,22 +27,26 @@ export function ThemeCustomizer() {
         <SheetHeader className="p-6 border-b">
           <SheetTitle>Theme Studio</SheetTitle>
           <SheetDescription>
-            Customize your dashboard experience.
+            Customize your dashboard experience. Changes are saved automatically.
           </SheetDescription>
         </SheetHeader>
         <ScrollArea className="h-[calc(100%-140px)]">
             <div className="p-6 space-y-8">
                 <FontSelector />
                 <PaletteSelector />
-                <GradientSelector />
-                <GradientEqualizer />
                 <BackgroundSelector />
+                {useTheme().theme.backgroundType === 'gradient' && (
+                  <>
+                    <GradientSelector />
+                    <GradientEqualizer />
+                  </>
+                )}
                 <ThemePreview />
             </div>
         </ScrollArea>
         <div className="p-6 border-t absolute bottom-0 w-full bg-background space-y-2">
              <Button onClick={resetEqualizer} variant="secondary" className="w-full">Reset Equalizer</Button>
-             <Button variant="outline" className="w-full">Reset All to Defaults</Button>
+             <Button onClick={resetTheme} variant="outline" className="w-full">Reset All to Defaults</Button>
         </div>
       </SheetContent>
     </Sheet>

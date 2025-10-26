@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -22,7 +23,7 @@ import {
 } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { type Inventory } from '@/types';
+import { type Inventory, type Material } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 function getStockStatus(quantity: number, reorderPoint: number | undefined) {
@@ -36,7 +37,7 @@ function getStatusColor(status: string) {
     case 'In Stock':
       return 'bg-green-500';
     case 'Low Stock':
-      return 'bg-yellow-500';
+      return 'bg-yellow-500 text-black';
     case 'Out of Stock':
       return 'bg-red-500';
     default:
@@ -56,7 +57,7 @@ export default function InventoryPage() {
     () => (firestore ? collection(firestore, 'materials') : null),
     [firestore]
   );
-  const { data: materials } = useCollection<any>(materialsQuery);
+  const { data: materials } = useCollection<Material>(materialsQuery);
 
   const productsQuery = useMemoFirebase(
     () => (firestore ? collection(firestore, 'products') : null),
@@ -74,6 +75,8 @@ export default function InventoryPage() {
     }
     return map;
   }, [materials, products]);
+
+  const isLoadingData = isLoading || !materials || !products;
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -100,7 +103,7 @@ export default function InventoryPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading ? (
+                {isLoadingData ? (
                   Array.from({ length: 8 }).map((_, i) => (
                     <TableRow key={i}>
                       <TableCell><Skeleton className="h-5 w-32" /></TableCell>
@@ -143,7 +146,7 @@ export default function InventoryPage() {
                 )}
               </TableBody>
             </Table>
-            {!isLoading && (!inventory || inventory.length === 0) && (
+            {!isLoadingData && (!inventory || inventory.length === 0) && (
                 <div className="text-center py-12 text-muted-foreground">
                     No inventory data found. Try seeding the database in the Admin panel.
                 </div>

@@ -1,8 +1,10 @@
+
 'use client';
 import WarehouseUtilization from './warehouse-utilization';
 import RecentActivity from './recent-activity';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import DigitalTwinPage from '@/app/dashboard/digital-twin/page';
 
 export default function WarehouseOpsView() {
   return (
@@ -11,10 +13,13 @@ export default function WarehouseOpsView() {
         <RecentActivity />
          <Card className="lg:col-span-3">
             <CardHeader>
-                <CardTitle>Live Map</CardTitle>
+                <CardTitle>Live Logistics Map</CardTitle>
+                <CardDescription>Real-time location of in-transit shipments and warehouses.</CardDescription>
             </CardHeader>
             <CardContent>
-                 <Skeleton className="h-[400px] w-full" />
+                 <div className="h-[50vh] w-full">
+                    <DigitalTwinPage />
+                 </div>
             </CardContent>
         </Card>
     </div>

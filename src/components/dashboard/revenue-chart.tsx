@@ -1,3 +1,4 @@
+
 'use client';
 import {
   LineChart,
@@ -40,7 +41,7 @@ export default function RevenueChart({ className }: { className?: string }) {
     <Card className={className}>
       <CardHeader>
         <CardTitle>Revenue & Orders</CardTitle>
-        <CardDescription>6-month trend</CardDescription>
+        <CardDescription>A 6-month trend analysis of revenue and order volume</CardDescription>
       </CardHeader>
       <CardContent className="pl-2">
         <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
@@ -51,6 +52,7 @@ export default function RevenueChart({ className }: { className?: string }) {
               tickLine={false}
               axisLine={false}
               tickMargin={8}
+              tickFormatter={(value) => value.slice(0, 3)}
             />
             <YAxis
               tickLine={false}

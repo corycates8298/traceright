@@ -1,3 +1,4 @@
+
 import type { LucideIcon } from 'lucide-react';
 
 export type Layout = 'analyst' | 'executive' | 'warehouse' | 'custom';
@@ -5,13 +6,10 @@ export type Layout = 'analyst' | 'executive' | 'warehouse' | 'custom';
 // Widget Dashboard Builder Types
 export type WidgetType =
   | 'kpi-card'
-  | 'area-chart'
-  | 'bar-chart'
-  | 'line-chart'
-  | 'pie-chart'
-  | 'activity-feed'
-  | 'data-table'
-  | 'text-header';
+  | 'revenue-chart'
+  | 'order-status-chart'
+  | 'warehouse-utilization'
+  | 'recent-activity';
 
 export type WidgetConfig = {
   id: string;
@@ -67,6 +65,7 @@ export type Material = {
   sku: string;
   cost: number;
   unit: string;
+  reorderPoint?: number;
   customFields: Record<string, any>;
   createdAt: any;
   updatedAt: any;

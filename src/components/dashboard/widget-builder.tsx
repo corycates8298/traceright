@@ -45,7 +45,7 @@ export function WidgetBuilder({
       title: 'New Widget',
       gridConfig: {
         w: defaultWidth,
-        h: 1, // Default height
+        h: type.includes('chart') ? 2 : 1, // Charts are taller
         x: 0, // Will be determined by grid layout
         y: 0,
       },
@@ -88,7 +88,7 @@ export function WidgetBuilder({
                     </Button>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                    Widgets are automatically saved to this browser. You can re-order them via drag-and-drop on the dashboard (coming soon).
+                    Widgets are automatically saved to this browser.
                 </p>
              </div>
         </ScrollArea>

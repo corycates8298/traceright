@@ -1,3 +1,4 @@
+
 'use client';
 import {
   Card,
@@ -21,7 +22,7 @@ export default function RecentActivity({ className }: { className?: string }) {
         <Card className={className}>
             <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
-                <CardDescription>Latest updates</CardDescription>
+                <CardDescription>Latest updates across the supply chain</CardDescription>
             </CardHeader>
             <CardContent>
                 <ul className="space-y-4">

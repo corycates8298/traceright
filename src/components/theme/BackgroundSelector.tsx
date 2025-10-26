@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useTheme } from '@/context/ThemeContext';
@@ -69,12 +70,17 @@ export function BackgroundSelector() {
                     key={p.name}
                     onClick={() => setPattern(p)}
                     className={cn(
-                        'p-3 rounded-lg border space-y-2 text-left h-24',
+                        'p-3 rounded-lg border space-y-2 text-left h-24 relative overflow-hidden',
                         isActive ? 'border-primary ring-2 ring-ring' : 'border-border'
                     )}
                     >
-                    <div className={cn("h-full w-full rounded-md opacity-20", p.className)} style={{backgroundColor: 'hsl(var(--muted))'}} />
-                    <p className="font-semibold text-sm -mt-20 text-center">{p.name}</p>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <p className="font-semibold text-sm z-10">{p.name}</p>
+                    </div>
+                    <div 
+                        className={cn("h-full w-full rounded-md opacity-20", p.className)} 
+                        style={{backgroundColor: 'hsl(var(--muted))'}} 
+                    />
                     </button>
                 );
                 })}

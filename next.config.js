@@ -1,14 +1,22 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+       {
+        protocol: 'https',
+        hostname: 'picsum.photos',
+      },
+    ],
+  },
   typescript: {
     ignoreBuildErrors: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
-  },
-  // Ensure experimental features are explicitly defined if needed.
-  experimental: {
-    //
   },
 };
 

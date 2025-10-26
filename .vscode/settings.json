@@ -1,5 +1,6 @@
 {
     "IDX.aI.showChatInEditorTab": true,
     "IDX.agenticWorkspace": true,
-    "IDX.aI.enableInlineCompletion": true
+    "IDX.aI.enableInlineCompletion": true,
+    "IDX.corgiMode": true
 }

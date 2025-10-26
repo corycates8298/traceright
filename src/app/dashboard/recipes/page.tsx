@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -52,6 +53,8 @@ export default function RecipesPage() {
     return new Map(products.map(p => [p.id, p]));
   }, [products]);
 
+  const isLoadingData = isLoading || !materials || !products;
+
   return (
     <div className="flex min-h-screen w-full flex-col">
       <Header title="Recipes & Formulations" />
@@ -64,7 +67,7 @@ export default function RecipesPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            {isLoading ? (
+            {isLoadingData ? (
               <div className="space-y-4">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <Skeleton key={i} className="h-14 w-full" />
@@ -106,7 +109,7 @@ export default function RecipesPage() {
                 ))}
               </Accordion>
             )}
-             {!isLoading && (!recipes || recipes.length === 0) && (
+             {!isLoadingData && (!recipes || recipes.length === 0) && (
                 <div className="text-center py-12 text-muted-foreground">
                     No recipes found. Try seeding the database in the Admin panel.
                 </div>

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -179,15 +180,6 @@ export default function SignupPage() {
             </Link>
           </div>
         </CardContent>
-        <CardFooter className="flex-col gap-2 pt-6">
-          <p className="text-xs text-muted-foreground">Brought to you by</p>
-          <Image
-            src="/truvera-logo.png"
-            alt="Truvera Solutions Inc. Logo"
-            width={120}
-            height={40}
-          />
-        </CardFooter>
       </Card>
     </div>
   );
