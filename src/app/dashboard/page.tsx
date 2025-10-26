@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -70,7 +69,7 @@ export default function DashboardPage() {
               variant={layout === 'warehouse' ? 'outline' : 'ghost'}
               size="sm"
               onClick={() => setLayout('warehouse')}
-               className={getButton-class('warehouse')}
+               className={getButtonClass('warehouse')}
             >
               <CircleDotDashed className="mr-2 h-4 w-4" />
               Warehouse Ops
