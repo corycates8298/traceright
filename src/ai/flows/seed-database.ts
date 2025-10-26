@@ -24,6 +24,8 @@ const SeedDatabaseOutputSchema = z.object({
     products: z.number(),
     batches: z.number(),
     shipments: z.number(),
+    invoices: z.number(),
+    costs: z.number(),
   }),
 });
 export type SeedDatabaseOutput = z.infer<typeof SeedDatabaseOutputSchema>;
@@ -45,12 +47,13 @@ const seedDatabaseFlow = ai.defineFlow(
     const NUM_SUPPLIERS = 10;
     const NUM_MATERIALS = 50;
     const NUM_PRODUCTS = 15;
-    const NUM_RECIPES = 10;
     const NUM_ORDERS = 100;
     const NUM_WAREHOUSES = 3;
     const NUM_BATCHES = 20;
+    const NUM_INVOICES = 50;
+    const NUM_COSTS = 200;
 
-    // 1. Create Warehouses / Inventory Locations
+    // 1. Create Warehouses
     const warehouses: any[] = [];
     for (let i = 0; i < NUM_WAREHOUSES; i++) {
         const warehouse = {
@@ -63,7 +66,7 @@ const seedDatabaseFlow = ai.defineFlow(
                 zip: faker.location.zipCode(),
                 country: 'USA',
             },
-            location: new GeoPoint(faker.location.latitude(), faker.location.longitude()),
+            location: new GeoPoint(faker.location.latitude({min: 25, max: 49}), faker.location.longitude({min: -124, max: -67})),
             capacity: faker.number.int({ min: 10000, max: 100000 }),
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
@@ -227,14 +230,16 @@ const seedDatabaseFlow = ai.defineFlow(
       batch.set(orderRef, order);
       
       if (status === 'In-Transit' || status === 'Delivered' || status === 'Delayed') {
+          const originWarehouse = faker.helpers.arrayElement(warehouses);
+          const destinationWarehouse = faker.helpers.arrayElement(warehouses.filter(w => w.id !== originWarehouse.id));
           const shipment = {
               id: faker.string.uuid(),
               orderId: order.id,
               carrier: faker.company.name(),
               trackingNumber: order.trackingId,
               status: status as 'In-Transit' | 'Delivered' | 'Delayed',
-              originLocation: new GeoPoint(faker.location.latitude(), faker.location.longitude()),
-              destinationLocation: new GeoPoint(faker.location.latitude(), faker.location.longitude()),
+              originLocation: originWarehouse.location,
+              destinationLocation: destinationWarehouse.location,
               currentLocation: new GeoPoint(faker.location.latitude(), faker.location.longitude()),
               estimatedDelivery: order.expectedDeliveryDate,
               actualDelivery: status === 'Delivered' ? faker.date.recent({ refDate: order.expectedDeliveryDate }) : null,
@@ -251,19 +256,21 @@ const seedDatabaseFlow = ai.defineFlow(
     const allStockableItems = [...materials, ...products];
     for (const warehouse of warehouses) {
         for(const item of allStockableItems) {
-            const inventory = {
-                id: `${warehouse.id}_${item.id}`,
-                warehouseId: warehouse.id,
-                itemId: item.id, // can be material or product
-                itemType: item.sku.startsWith('MAT') ? 'material' : 'product',
-                quantity: faker.number.int({ min: 0, max: 1000 }),
-                lastRestocked: faker.date.recent(),
-                updatedAt: serverTimestamp(),
-                customFields: {},
-            };
-            const inventoryRef = doc(firestore, 'inventory', inventory.id);
-            batch.set(inventoryRef, inventory);
-            inventoryCount++;
+            if (faker.datatype.boolean(0.7)) { // Only stock ~70% of items in each warehouse
+                const inventory = {
+                    id: `${warehouse.id}_${item.id}`,
+                    warehouseId: warehouse.id,
+                    itemId: item.id, // can be material or product
+                    itemType: item.sku.startsWith('MAT') ? 'material' : 'product',
+                    quantity: faker.number.int({ min: 0, max: 1000 }),
+                    lastRestocked: faker.date.recent(),
+                    updatedAt: serverTimestamp(),
+                    customFields: {},
+                };
+                const inventoryRef = doc(firestore, 'inventory', inventory.id);
+                batch.set(inventoryRef, inventory);
+                inventoryCount++;
+            }
         }
     }
 
@@ -271,21 +278,48 @@ const seedDatabaseFlow = ai.defineFlow(
     for(let i = 0; i < NUM_BATCHES; i++) {
         const recipe = faker.helpers.arrayElement(recipes);
         const startTime = faker.date.past();
-        const batch = {
+        const batchDoc = {
             id: faker.string.uuid(),
             recipeId: recipe.id,
             productId: recipe.productId,
             status: faker.helpers.arrayElement(['Scheduled', 'In-Progress', 'Completed', 'Failed']),
             startTime: startTime,
             endTime: faker.date.future({refDate: startTime}),
-            materialsConsumed: recipe.ingredients.map(ing => ({...ing, actualQuantity: ing.quantity * faker.number.float({min: 0.95, max: 1.05})})),
+            materialsConsumed: recipe.ingredients.map((ing:any) => ({...ing, actualQuantity: ing.quantity * faker.number.float({min: 0.95, max: 1.05})})),
             quantityProduced: recipe.outputQuantity * faker.number.int({min: 0.98, max: 1}),
             costAnalysis: {},
         };
-        const batchRef = doc(firestore, 'batches', batch.id);
-        batch.set(batchRef, batch);
+        const batchRef = doc(firestore, 'batches', batchDoc.id);
+        batch.set(batchRef, batchDoc);
     }
 
+    // 8. Create Invoices
+    for (let i = 0; i < NUM_INVOICES; i++) {
+        const order = faker.helpers.arrayElement(orders);
+        const invoice = {
+            id: `INV-${faker.string.numeric(5)}`,
+            orderId: order.id,
+            amount: order.totalValue * faker.number.float({min: 1.0, max: 1.05}),
+            status: faker.helpers.arrayElement(['Paid', 'Pending', 'Overdue']),
+            dueDate: faker.date.future(),
+            createdAt: order.createdAt,
+        };
+        const invoiceRef = doc(firestore, 'invoices', invoice.id);
+        batch.set(invoiceRef, invoice);
+    }
+    
+    // 9. Create Costs
+    for (let i = 0; i < NUM_COSTS; i++) {
+        const cost = {
+            id: faker.string.uuid(),
+            category: faker.helpers.arrayElement(['Shipping', 'Materials', 'Production', 'Overhead', 'Labor']),
+            amount: parseFloat(faker.commerce.price({min: 100, max: 5000})),
+            date: faker.date.past(),
+            description: faker.lorem.sentence(),
+        };
+        const costRef = doc(firestore, 'costs', cost.id);
+        batch.set(costRef, cost);
+    }
 
     await batch.commit();
 
@@ -301,6 +335,8 @@ const seedDatabaseFlow = ai.defineFlow(
         products: NUM_PRODUCTS,
         batches: NUM_BATCHES,
         shipments: shipments.length,
+        invoices: NUM_INVOICES,
+        costs: NUM_COSTS,
       },
     };
   }
