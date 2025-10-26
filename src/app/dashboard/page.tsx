@@ -42,62 +42,63 @@ export default function DashboardPage() {
   return (
     <div className="flex min-h-screen w-full flex-col">
       <Header title="Dashboard" />
-      <main className="flex-1 p-4 sm:p-6">
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
-          <h2 className="text-muted-foreground text-lg">
-            30,000-foot view of your supply chain operations
-          </h2>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant={getButtonClass('analyst')}
-              size="sm"
-              onClick={() => setLayout('analyst')}
-            >
-              <Eye className="mr-2 h-4 w-4" />
-              Analyst View
-            </Button>
-            <Button
-              variant={getButtonClass('executive')}
-              size="sm"
-              onClick={() => setLayout('executive')}
-            >
-              <Briefcase className="mr-2 h-4 w-4" />
-              Executive Summary
-            </Button>
-            <Button
-              variant={getButtonClass('warehouse')}
-              size="sm"
-              onClick={() => setLayout('warehouse')}
-            >
-              <CircleDotDashed className="mr-2 h-4 w-4" />
-              Warehouse Ops
-            </Button>
-             <Button
-              variant={getButtonClass('custom')}
-              size="sm"
-              onClick={() => setLayout('custom')}
-            >
-              <LayoutGrid className="mr-2 h-4 w-4" />
-              Custom
-              {layout === 'custom' && widgets.length > 0 && (
-                 <span className="ml-2 bg-primary/20 text-primary rounded-full px-2 py-0.5 text-xs">
-                    {widgets.length}
-                  </span>
-              )}
-            </Button>
-            {layout === 'custom' && (
-                <Button size="sm" onClick={() => setIsBuilderOpen(true)}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Widget
+      <div className="flex flex-col sticky top-14 sm:top-16 z-10">
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b bg-background px-4 sm:px-6 py-4">
+            <h2 className="text-muted-foreground text-lg hidden md:block">
+                30,000-foot view of your supply chain operations
+            </h2>
+            <div className="flex flex-wrap items-center gap-2">
+                <Button
+                variant={getButtonClass('analyst')}
+                size="sm"
+                onClick={() => setLayout('analyst')}
+                >
+                <Eye className="mr-2 h-4 w-4" />
+                Analyst View
                 </Button>
-            )}
-            <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-              <Settings2 className="mr-2 h-4 w-4" />
-              Customize
-            </Button>
-          </div>
+                <Button
+                variant={getButtonClass('executive')}
+                size="sm"
+                onClick={() => setLayout('executive')}
+                >
+                <Briefcase className="mr-2 h-4 w-4" />
+                Executive Summary
+                </Button>
+                <Button
+                variant={getButtonClass('warehouse')}
+                size="sm"
+                onClick={() => setLayout('warehouse')}
+                >
+                <CircleDotDashed className="mr-2 h-4 w-4" />
+                Warehouse Ops
+                </Button>
+                <Button
+                variant={getButtonClass('custom')}
+                size="sm"
+                onClick={() => setLayout('custom')}
+                >
+                <LayoutGrid className="mr-2 h-4 w-4" />
+                Custom
+                {layout === 'custom' && widgets.length > 0 && (
+                    <span className="ml-2 bg-primary/20 text-primary rounded-full px-2 py-0.5 text-xs">
+                        {widgets.length}
+                    </span>
+                )}
+                </Button>
+                {layout === 'custom' && (
+                    <Button size="sm" onClick={() => setIsBuilderOpen(true)}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Widget
+                    </Button>
+                )}
+                <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
+                <Settings2 className="mr-2 h-4 w-4" />
+                Customize
+                </Button>
+            </div>
         </div>
-
+      </div>
+      <main className="flex-1 p-4 sm:p-6">
         {renderLayout()}
       </main>
       <WidgetBuilder isOpen={isBuilderOpen} setIsOpen={setIsBuilderOpen} setWidgets={setWidgets} />
