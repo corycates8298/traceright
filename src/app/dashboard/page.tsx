@@ -7,6 +7,7 @@ import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
 import { Eye, Briefcase, Settings2, DollarSign, AlertTriangle, Truck, CheckCircle, Activity, CircleDotDashed } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 
 const kpiData = [
   { title: 'Total Revenue', value: '$2.4M', change: '+15.2%', Icon: DollarSign },
@@ -25,10 +26,10 @@ const revenueData = [
 ];
 
 const orderStatusData = [
-    { name: 'Delivered', value: 2950 },
-    { name: 'In-Transit', value: 1250 },
-    { name: 'Processing', value: 980 },
-    { name: 'Delayed', value: 150 },
+    { name: 'Delivered', value: 2950, fill: "hsl(var(--chart-1))" },
+    { name: 'In-Transit', value: 1250, fill: "hsl(var(--chart-2))" },
+    { name: 'Processing', value: 980, fill: "hsl(var(--chart-3))" },
+    { name: 'Delayed', value: 150, fill: "hsl(var(--chart-4))" },
 ];
 
 const warehouseData = [
@@ -45,6 +46,13 @@ const recentActivityData = [
     { text: 'Inbound receipt IR-3201 inspected and approved', time: '45 min ago', Icon: Eye, color: 'text-purple-500' },
     { text: 'Batch B-1032 production completed', time: '1 hour ago', Icon: Activity, color: 'text-green-500' },
 ];
+
+const chartConfig = {
+  revenue: {
+    label: 'Revenue',
+    color: 'hsl(var(--primary))',
+  },
+};
 
 export default function DashboardPage() {
   return (
@@ -99,21 +107,31 @@ export default function DashboardPage() {
                     <CardDescription>6-month trend</CardDescription>
                 </CardHeader>
                 <CardContent className="pl-2">
-                    <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={revenueData}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} />
-                        <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
-                        <YAxis tickLine={false} axisLine={false} tickMargin={8} />
-                        <Tooltip
-                            contentStyle={{
-                                background: 'hsl(var(--card))',
-                                borderColor: 'hsl(var(--border))',
-                                borderRadius: 'var(--radius)'
-                            }}
+                  <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+                    <LineChart accessibilityLayer data={revenueData}>
+                        <CartesianGrid vertical={false} />
+                        <XAxis
+                            dataKey="month"
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={8}
                         />
-                        <Line type="monotone" dataKey="revenue" stroke="hsl(var(--primary))" strokeWidth={2} dot={false} />
+                        <YAxis
+                            tickLine={false}
+                            axisLine={false}
+                            tickMargin={8}
+                            tickFormatter={(value) => `$${Number(value) / 1000}k`}
+                        />
+                        <ChartTooltip cursor={false} content={<ChartTooltipContent />} />
+                        <Line
+                            dataKey="revenue"
+                            type="monotone"
+                            stroke="var(--color-revenue)"
+                            strokeWidth={2}
+                            dot={false}
+                        />
                     </LineChart>
-                    </ResponsiveContainer>
+                  </ChartContainer>
                 </CardContent>
             </Card>
 
@@ -126,8 +144,8 @@ export default function DashboardPage() {
                      <ResponsiveContainer width="100%" height={300}>
                         <BarChart data={orderStatusData} layout="vertical" margin={{ left: 10 }}>
                              <XAxis type="number" hide />
-                             <YAxis type="category" dataKey="name" hide />
-                             <Bar dataKey="value" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={30} />
+                             <YAxis dataKey="name" type="category" hide />
+                             <Bar dataKey="value" radius={[0, 4, 4, 0]} barSize={30} />
                         </BarChart>
                     </ResponsiveContainer>
                 </CardContent>

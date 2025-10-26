@@ -23,7 +23,12 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip } from 'recharts';
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from '@/components/ui/chart';
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer } from 'recharts';
 
 type Invoice = {
   id: string;
@@ -34,10 +39,10 @@ type Invoice = {
 };
 
 type Cost = {
-    id: string;
-    category: string;
-    amount: number;
-    date: any; // Firestore Timestamp
+  id: string;
+  category: string;
+  amount: number;
+  date: any; // Firestore Timestamp
 };
 
 function getStatusVariant(status: Invoice['status']) {
@@ -55,32 +60,49 @@ function getStatusVariant(status: Invoice['status']) {
 
 export default function FinancialsPage() {
   const firestore = useFirestore();
-  
+
   const invoicesQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'invoices'), orderBy('dueDate', 'desc')) : null),
+    () =>
+      firestore
+        ? query(collection(firestore, 'invoices'), orderBy('dueDate', 'desc'))
+        : null,
     [firestore]
   );
-  const { data: invoices, isLoading: isLoadingInvoices } = useCollection<Invoice>(invoicesQuery);
+  const { data: invoices, isLoading: isLoadingInvoices } =
+    useCollection<Invoice>(invoicesQuery);
 
   const costsQuery = useMemoFirebase(
-    () => (firestore ? query(collection(firestore, 'costs'), orderBy('date', 'desc')) : null),
+    () =>
+      firestore
+        ? query(collection(firestore, 'costs'), orderBy('date', 'desc'))
+        : null,
     [firestore]
   );
   const { data: costs, isLoading: isLoadingCosts } = useCollection<Cost>(costsQuery);
-  
+
   const costByCategory = useMemo(() => {
     if (!costs) return [];
-    const summary = costs.reduce((acc, cost) => {
+    const summary = costs.reduce(
+      (acc, cost) => {
         if (!acc[cost.category]) {
-            acc[cost.category] = { name: cost.category, total: 0 };
+          acc[cost.category] = { name: cost.category, total: 0 };
         }
         acc[cost.category].total += cost.amount;
         return acc;
-    }, {} as Record<string, {name: string, total: number}>);
+      },
+      {} as Record<string, { name: string; total: number }>
+    );
     return Object.values(summary);
   }, [costs]);
 
   const isLoading = isLoadingInvoices || isLoadingCosts;
+  
+  const chartConfig = {
+    total: {
+      label: 'Total Cost',
+      color: 'hsl(var(--primary))',
+    },
+  };
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -106,71 +128,99 @@ export default function FinancialsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {isLoadingInvoices ? (
-                    Array.from({ length: 5 }).map((_, i) => (
-                      <TableRow key={i}>
-                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-24" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-16 ml-auto" /></TableCell>
-                        <TableCell><Skeleton className="h-5 w-32" /></TableCell>
-                        <TableCell><Skeleton className="h-6 w-20 mx-auto rounded-full" /></TableCell>
-                      </TableRow>
-                    ))
-                  ) : (
-                    invoices?.map((invoice) => (
-                      <TableRow key={invoice.id}>
-                        <TableCell className="font-medium">{invoice.id}</TableCell>
-                        <TableCell>{invoice.orderId}</TableCell>
-                        <TableCell className="text-right">${invoice.amount.toFixed(2)}</TableCell>
-                        <TableCell>{invoice.dueDate?.toDate ? format(invoice.dueDate.toDate(), 'PPP') : 'N/A'}</TableCell>
-                        <TableCell className="text-center">
-                          <Badge variant="outline" className={`border-0 text-white ${getStatusVariant(invoice.status)}`}>
-                            {invoice.status}
-                          </Badge>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
+                  {isLoadingInvoices
+                    ? Array.from({ length: 5 }).map((_, i) => (
+                        <TableRow key={i}>
+                          <TableCell>
+                            <Skeleton className="h-5 w-24" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-5 w-24" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-5 w-16 ml-auto" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-5 w-32" />
+                          </TableCell>
+                          <TableCell>
+                            <Skeleton className="h-6 w-20 mx-auto rounded-full" />
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    : invoices?.map((invoice) => (
+                        <TableRow key={invoice.id}>
+                          <TableCell className="font-medium">
+                            {invoice.id}
+                          </TableCell>
+                          <TableCell>{invoice.orderId}</TableCell>
+                          <TableCell className="text-right">
+                            ${invoice.amount.toFixed(2)}
+                          </TableCell>
+                          <TableCell>
+                            {invoice.dueDate?.toDate
+                              ? format(invoice.dueDate.toDate(), 'PPP')
+                              : 'N/A'}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge
+                              variant="outline"
+                              className={`border-0 text-white ${getStatusVariant(
+                                invoice.status
+                              )}`}
+                            >
+                              {invoice.status}
+                            </Badge>
+                          </TableCell>
+                        </TableRow>
+                      ))}
                 </TableBody>
               </Table>
               {!isLoadingInvoices && (!invoices || invoices.length === 0) && (
-                  <div className="text-center py-12 text-muted-foreground">
-                      No invoice data found. Try seeding the database in the Admin panel.
-                  </div>
+                <div className="text-center py-12 text-muted-foreground">
+                  No invoice data found. Try seeding the database in the Admin
+                  panel.
+                </div>
               )}
             </CardContent>
           </Card>
-           <Card>
+          <Card>
             <CardHeader>
-                <CardTitle>Cost Breakdown</CardTitle>
-                <CardDescription>Summary of costs by category.</CardDescription>
+              <CardTitle>Cost Breakdown</CardTitle>
+              <CardDescription>Summary of costs by category.</CardDescription>
             </CardHeader>
             <CardContent className="pl-2">
-                {isLoadingCosts ? (
-                     <Skeleton className="h-[300px] w-full" />
-                ): (
-                    <ResponsiveContainer width="100%" height={300}>
-                        <BarChart data={costByCategory} layout="vertical" margin={{ right: 20 }}>
-                            <CartesianGrid strokeDasharray="3 3" horizontal={false} />
-                            <XAxis type="number" tickFormatter={(value) => `$${(value as number) / 1000}k`} />
-                            <YAxis type="category" dataKey="name" tickLine={false} axisLine={false} tick={{fontSize: 12}} />
-                            <Tooltip
-                                cursor={{fill: 'hsl(var(--muted))'}}
-                                contentStyle={{
-                                    background: 'hsl(var(--card))',
-                                    borderColor: 'hsl(var(--border))',
-                                    borderRadius: 'var(--radius)'
-                                }}
-                                formatter={(value) => `$${(value as number).toFixed(2)}`}
-                            />
-                            <Bar dataKey="total" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
-                        </BarChart>
-                    </ResponsiveContainer>
-                )}
-                 {!isLoadingCosts && (!costs || costs.length === 0) && (
-                  <div className="text-center flex items-center justify-center h-[300px] text-muted-foreground">
-                      No cost data found.
-                  </div>
+              {isLoadingCosts ? (
+                <Skeleton className="h-[300px] w-full" />
+              ) : (
+                <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+                  <BarChart accessibilityLayer data={costByCategory} layout="vertical" margin={{ right: 20 }}>
+                    <CartesianGrid horizontal={false} />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      tickLine={false}
+                      tickMargin={10}
+                      axisLine={false}
+                      tickFormatter={(value) => value.slice(0, 3)}
+                    />
+                    <XAxis dataKey="total" type="number" hide />
+                    <ChartTooltip
+                      cursor={false}
+                      content={<ChartTooltipContent indicator="line" />}
+                    />
+                    <Bar
+                      dataKey="total"
+                      fill="var(--color-total)"
+                      radius={4}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              )}
+              {!isLoadingCosts && (!costs || costs.length === 0) && (
+                <div className="text-center flex items-center justify-center h-[300px] text-muted-foreground">
+                  No cost data found.
+                </div>
               )}
             </CardContent>
           </Card>
