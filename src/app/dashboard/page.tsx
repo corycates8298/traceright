@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -94,7 +95,7 @@ export default function DashboardPage() {
                     Add Widget
                 </Button>
             )}
-            <Button onClick={() => setOpen(true)}>
+            <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
               <Settings2 className="mr-2 h-4 w-4" />
               Customize
             </Button>
