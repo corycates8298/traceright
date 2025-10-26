@@ -28,8 +28,7 @@ import {
 } from '@/components/ui/alert-dialog';
 
 export default function AdminPage() {
-  // const { user } = useUser(); // Re-enable when auth is fully implemented
-  const user = { role: 'admin' }; // Placeholder for admin role
+  const { user, isUserLoading } = useUser();
   const { toast } = useToast();
   const [isSeeding, setIsSeeding] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
@@ -82,7 +81,29 @@ export default function AdminPage() {
     }
   };
 
-  if (user?.role !== 'admin') {
+  // We need to wait for the user to be loaded before checking roles
+  if (isUserLoading) {
+    return (
+      <div className="flex min-h-screen w-full flex-col">
+        <Header title="Admin" />
+        <main className="flex-1 p-4 sm:p-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Loading...</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Verifying permissions...</p>
+            </CardContent>
+          </Card>
+        </main>
+      </div>
+    );
+  }
+
+  // TODO: Replace with custom claims role check `user.claims.role` once implemented
+  const isAdmin = user?.email === 'admin@traceright.ai';
+
+  if (!isAdmin) {
     return (
       <div className="flex min-h-screen w-full flex-col">
         <Header title="Admin" />
