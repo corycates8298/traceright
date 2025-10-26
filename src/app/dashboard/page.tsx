@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState } from 'react';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
-import { Settings2, Eye, Briefcase, CircleDotDashed, LayoutGrid } from 'lucide-react';
+import { Settings2, Eye, Briefcase, CircleDotDashed, LayoutGrid, Plus } from 'lucide-react';
 import type { Layout, WidgetConfig } from '@/types';
 import AnalystView from '@/components/dashboard/analyst-view';
 import ExecutiveView from '@/components/dashboard/executive-view';
@@ -11,12 +12,13 @@ import WarehouseOpsView from '@/components/dashboard/warehouse-ops-view';
 import CustomDashboardView from '@/components/dashboard/custom-view';
 import { useTheme } from '@/context/ThemeContext';
 import { WidgetBuilder } from '@/components/dashboard/widget-builder';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 
 export default function DashboardPage() {
   const [layout, setLayout] = useState<Layout>('analyst');
-  const { open, setOpen } = useTheme();
+  const { setOpen } = useTheme();
   const [isBuilderOpen, setIsBuilderOpen] = useState(false);
-  const [widgets, setWidgets] = useState<WidgetConfig[]>([]);
+  const [widgets, setWidgets] = useLocalStorage<WidgetConfig[]>('custom-dashboard-widgets', []);
 
   const renderLayout = () => {
     switch (layout) {
@@ -27,7 +29,7 @@ export default function DashboardPage() {
       case 'warehouse':
         return <WarehouseOpsView />;
       case 'custom':
-        return <CustomDashboardView widgets={widgets} setWidgets={setWidgets} />;
+        return <CustomDashboardView widgets={widgets} setWidgets={setWidgets} setIsBuilderOpen={setIsBuilderOpen} />;
       default:
         return <AnalystView />;
     }
@@ -68,7 +70,7 @@ export default function DashboardPage() {
               variant={layout === 'warehouse' ? 'outline' : 'ghost'}
               size="sm"
               onClick={() => setLayout('warehouse')}
-               className={getButtonClass('warehouse')}
+               className={getButton-class('warehouse')}
             >
               <CircleDotDashed className="mr-2 h-4 w-4" />
               Warehouse Ops
@@ -87,6 +89,12 @@ export default function DashboardPage() {
                   </span>
               )}
             </Button>
+            {layout === 'custom' && (
+                <Button size="sm" onClick={() => setIsBuilderOpen(true)}>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Widget
+                </Button>
+            )}
             <Button onClick={() => setOpen(true)}>
               <Settings2 className="mr-2 h-4 w-4" />
               Customize
@@ -96,7 +104,7 @@ export default function DashboardPage() {
 
         {renderLayout()}
       </main>
-      <WidgetBuilder isOpen={isBuilderOpen} setIsOpen={setIsBuilderOpen} widgets={widgets} setWidgets={setWidgets} />
+      <WidgetBuilder isOpen={isBuilderOpen} setIsOpen={setIsBuilderOpen} setWidgets={setWidgets} />
     </div>
   );
 }

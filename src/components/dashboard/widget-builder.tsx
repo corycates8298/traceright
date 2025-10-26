@@ -1,54 +1,101 @@
+
 'use client';
 
 import React from 'react';
-import type { WidgetConfig } from '@/types';
+import type { WidgetConfig, WidgetType } from '@/types';
 import {
   Sheet,
   SheetContent,
   SheetHeader,
   SheetTitle,
   SheetDescription,
-  SheetFooter
+  SheetFooter,
+  SheetClose
 } from '@/components/ui/sheet';
 import { Button } from '../ui/button';
+import { ScrollArea } from '../ui/scroll-area';
+import { Card } from '../ui/card';
+import { Plus, Trash2 } from 'lucide-react';
+import { Separator } from '../ui/separator';
 
 interface WidgetBuilderProps {
   isOpen: boolean;
   setIsOpen: (isOpen: boolean) => void;
-  widgets: WidgetConfig[];
   setWidgets: React.Dispatch<React.SetStateAction<WidgetConfig[]>>;
 }
+
+const availableWidgets: { type: WidgetType; name: string, defaultWidth: number }[] = [
+    { type: 'kpi-card', name: 'KPI Card', defaultWidth: 1 },
+    { type: 'revenue-chart', name: 'Revenue Chart', defaultWidth: 2 },
+    { type: 'order-status-chart', name: 'Order Status Chart', defaultWidth: 1 },
+    { type: 'warehouse-utilization', name: 'Warehouse Utilization', defaultWidth: 2 },
+    { type: 'recent-activity', name: 'Recent Activity', defaultWidth: 1 },
+];
+
 
 export function WidgetBuilder({
   isOpen,
   setIsOpen,
-  widgets,
   setWidgets,
 }: WidgetBuilderProps) {
+  const addWidget = (type: WidgetType, defaultWidth: number) => {
+    const newWidget: WidgetConfig = {
+      id: `${type}-${Date.now()}`,
+      type: type,
+      title: 'New Widget',
+      gridConfig: {
+        w: defaultWidth,
+        h: 1, // Default height
+        x: 0, // Will be determined by grid layout
+        y: 0,
+      },
+    };
+    setWidgets((prev) => [...prev, newWidget]);
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetContent className="w-full sm:max-w-2xl p-0">
+      <SheetContent className="w-full sm:max-w-md p-0 flex flex-col">
         <SheetHeader className="p-6 border-b">
           <SheetTitle>Dashboard Widget Builder</SheetTitle>
           <SheetDescription>
-            Add, remove, and configure widgets for your custom dashboard.
+            Click a widget from the catalog to add it to your dashboard.
           </SheetDescription>
         </SheetHeader>
-        <div className="p-6">
-            <div className="flex items-center justify-center h-[60vh] border-2 border-dashed rounded-lg">
-                <div className="text-center">
-                    <h3 className="text-xl font-bold tracking-tight">
-                        Widget Builder Coming Soon
-                    </h3>
-                    <p className="text-muted-foreground">
-                        This panel will allow you to customize your dashboard.
-                    </p>
+        <ScrollArea className="flex-1">
+            <div className="p-6 space-y-4">
+                <h4 className="font-semibold text-sm">Widget Catalog</h4>
+                <div className="grid grid-cols-2 gap-4">
+                    {availableWidgets.map(widget => (
+                        <Card key={widget.type} className="p-4 flex flex-col items-center justify-center text-center space-y-2">
+                             <div className="w-full h-16 bg-muted rounded-md flex items-center justify-center">
+                                <p className="text-xs text-muted-foreground">{widget.name}</p>
+                            </div>
+                            <Button size="sm" className="w-full" onClick={() => addWidget(widget.type, widget.defaultWidth)}>
+                                <Plus className="mr-2 h-4 w-4" /> Add
+                            </Button>
+                        </Card>
+                    ))}
                 </div>
             </div>
-        </div>
+            <Separator />
+             <div className="p-6 space-y-4">
+                <div className="flex justify-between items-center">
+                    <h4 className="font-semibold text-sm">Current Layout</h4>
+                    <Button variant="destructive" size="sm" onClick={() => setWidgets([])}>
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Clear All
+                    </Button>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                    Widgets are automatically saved to this browser. You can re-order them via drag-and-drop on the dashboard (coming soon).
+                </p>
+             </div>
+        </ScrollArea>
         <SheetFooter className="p-6 border-t">
-            <Button variant="outline" onClick={() => setIsOpen(false)}>Cancel</Button>
-            <Button>Save Dashboard</Button>
+            <SheetClose asChild>
+                <Button className="w-full">Done</Button>
+            </SheetClose>
         </SheetFooter>
       </SheetContent>
     </Sheet>

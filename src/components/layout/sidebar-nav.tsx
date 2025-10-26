@@ -1,3 +1,4 @@
+
 'use client';
 
 import {
@@ -43,6 +44,7 @@ type NavLink = {
   href: string;
   label: string;
   icon: LucideIcon;
+  disabled?: boolean;
 };
 
 type NavGroup = {
@@ -71,27 +73,31 @@ const navGroups: NavGroup[] = [
   {
     label: 'Intelligence',
     links: [
-      { href: '/dashboard/digital-twin', label: 'Digital Twin', icon: Map },
+      { href: '/dashboard/digital-twin', label: 'Digital Twin', icon: Map, disabled: true },
       {
         href: '/dashboard/demand-forecasting',
         label: 'Demand Forecasting',
         icon: TrendingUp,
+        disabled: true,
       },
       {
         href: '/dashboard/visual-inspection',
         label: 'AI Visual Inspection',
         icon: ScanSearch,
+        disabled: true,
       },
-      { href: '/dashboard/reporting', label: 'AI Reporting Hub', icon: FileText },
+      { href: '/dashboard/reporting', label: 'AI Reporting Hub', icon: FileText, disabled: true },
       {
         href: '/dashboard/proactive-agent',
         label: 'Proactive Agent',
         icon: Bot,
+        disabled: true,
       },
       {
         href: '/dashboard/ml-intelligence',
         label: 'ML Intelligence',
         icon: BrainCircuit,
+        disabled: true,
       },
     ],
   },
@@ -151,13 +157,14 @@ export function SidebarNav() {
                   const isActive = pathname.startsWith(link.href);
                   return (
                     <SidebarMenuItem key={link.href}>
-                      <Link href={link.href} passHref>
+                      <Link href={link.disabled ? '#' : link.href} passHref>
                         <SidebarMenuButton
                           asChild
                           isActive={isActive}
                           tooltip={{ children: link.label }}
                           variant="ghost"
                           className='justify-start'
+                          disabled={link.disabled}
                         >
                           <span>
                             <link.icon />
