@@ -25,9 +25,9 @@ import { Progress } from '@/components/ui/progress';
 import { type Inventory } from '@/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
-function getStockStatus(quantity: number, reorderPoint: number) {
+function getStockStatus(quantity: number, reorderPoint: number | undefined) {
   if (quantity === 0) return 'Out of Stock';
-  if (quantity < reorderPoint) return 'Low Stock';
+  if (reorderPoint && quantity < reorderPoint) return 'Low Stock';
   return 'In Stock';
 }
 
@@ -47,7 +47,7 @@ function getStatusColor(status: string) {
 export default function InventoryPage() {
   const firestore = useFirestore();
   const inventoryQuery = useMemoFirebase(
-    () => query(collection(firestore, 'inventory'), orderBy('materialId')),
+    () => query(collection(firestore, 'inventory'), orderBy('itemId')),
     [firestore]
   );
   const { data: inventory, isLoading } = useCollection<Inventory>(inventoryQuery);
@@ -58,10 +58,18 @@ export default function InventoryPage() {
   );
   const { data: materials } = useCollection<any>(materialsQuery);
 
-  const materialsMap = useMemo(() => {
-    if (!materials) return new Map();
-    return new Map(materials.map(m => [m.id, m]));
-  }, [materials]);
+  const productsQuery = useMemoFirebase(
+    () => collection(firestore, 'products'),
+    [firestore]
+  );
+  const { data: products } = useCollection<any>(productsQuery);
+
+  const itemMap = useMemo(() => {
+    const map = new Map();
+    materials?.forEach(m => map.set(m.id, m));
+    products?.forEach(p => map.set(p.id, p));
+    return map;
+  }, [materials, products]);
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -71,14 +79,15 @@ export default function InventoryPage() {
           <CardHeader>
             <CardTitle>Warehouse Stock</CardTitle>
             <CardDescription>
-              An overview of all materials in your inventory.
+              An overview of all materials and finished products in your inventory.
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Material</TableHead>
+                  <TableHead>Item Name</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>SKU</TableHead>
                   <TableHead className="text-center">Quantity</TableHead>
                   <TableHead className="text-center">Reorder Point</TableHead>
@@ -88,9 +97,10 @@ export default function InventoryPage() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
+                  Array.from({ length: 8 }).map((_, i) => (
                     <TableRow key={i}>
                       <TableCell><Skeleton className="h-5 w-32" /></TableCell>
+                      <TableCell><Skeleton className="h-5 w-16" /></TableCell>
                       <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                       <TableCell><Skeleton className="h-5 w-16 mx-auto" /></TableCell>
                       <TableCell><Skeleton className="h-5 w-16 mx-auto" /></TableCell>
@@ -100,18 +110,20 @@ export default function InventoryPage() {
                   ))
                 ) : (
                   inventory?.map((item) => {
-                    const material = materialsMap.get(item.materialId);
-                    if (!material) return null;
+                    const stockItem = itemMap.get(item.itemId);
+                    if (!stockItem) return null;
 
-                    const status = getStockStatus(item.quantity, material.reorderPoint);
-                    const stockPercentage = (item.quantity / (material.reorderPoint * 2)) * 100;
+                    const reorderPoint = stockItem.reorderPoint || stockItem.currentStock / 2; // Products might not have a reorder point
+                    const status = getStockStatus(item.quantity, reorderPoint);
+                    const stockPercentage = (item.quantity / (reorderPoint * 2)) * 100;
                     
                     return (
                       <TableRow key={item.id}>
-                        <TableCell className="font-medium">{material.name}</TableCell>
-                        <TableCell>{material.sku}</TableCell>
-                        <TableCell className="text-center">{item.quantity} {material.unit}</TableCell>
-                        <TableCell className="text-center">{material.reorderPoint} {material.unit}</TableCell>
+                        <TableCell className="font-medium">{stockItem.name}</TableCell>
+                        <TableCell className="capitalize">{item.itemType}</TableCell>
+                        <TableCell>{stockItem.sku}</TableCell>
+                        <TableCell className="text-center">{item.quantity} {stockItem.unit || ''}</TableCell>
+                        <TableCell className="text-center">{reorderPoint || 'N/A'}</TableCell>
                         <TableCell className="text-center">
                           <Badge variant="outline" className={`border-0 text-white ${getStatusColor(status)}`}>
                             {status}
@@ -128,7 +140,7 @@ export default function InventoryPage() {
             </Table>
             {!isLoading && inventory?.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground">
-                    No inventory data found.
+                    No inventory data found. Try seeding the database in the Admin panel.
                 </div>
             )}
           </CardContent>
