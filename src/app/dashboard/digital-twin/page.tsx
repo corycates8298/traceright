@@ -1,5 +1,9 @@
 'use client';
 
+import { useMemo } from 'react';
+import { useCollection, useMemoFirebase } from '@/firebase';
+import { useFirestore } from '@/firebase';
+import { collection, query, where } from 'firebase/firestore';
 import { Header } from '@/components/layout/header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
@@ -8,21 +12,24 @@ import {
   AdvancedMarker,
   Pin,
 } from '@vis.gl/react-google-maps';
-
-const warehouses = [
-  { id: 'wh-1', name: 'Main Distribution Center', position: { lat: 34.0522, lng: -118.2437 } },
-  { id: 'wh-2', name: 'West Coast Hub', position: { lat: 37.7749, lng: -122.4194 } },
-  { id: 'wh-3', name: 'East Coast Hub', position: { lat: 40.7128, lng: -74.0060 } },
-];
-
-const ordersInTransit = [
-    { id: 'order-1', position: { lat: 36.1699, lng: -115.1398 } },
-    { id: 'order-2', position: { lat: 39.7392, lng: -104.9903 } },
-    { id: 'order-3', position: { lat: 41.8781, lng: -87.6298 } },
-];
+import { type Warehouse, type Order } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function DigitalTwinPage() {
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const firestore = useFirestore();
+
+  const warehousesQuery = useMemoFirebase(
+    () => collection(firestore, 'warehouses'),
+    [firestore]
+  );
+  const { data: warehouses, isLoading: isLoadingWarehouses } = useCollection<Warehouse>(warehousesQuery);
+
+  const shipmentsQuery = useMemoFirebase(
+    () => query(collection(firestore, 'shipments'), where('status', '==', 'In-Transit')),
+    [firestore]
+  );
+  const { data: shipments, isLoading: isLoadingShipments } = useCollection<any>(shipmentsQuery);
 
   if (!apiKey) {
     return (
@@ -44,12 +51,17 @@ export default function DigitalTwinPage() {
     );
   }
 
+  const isLoading = isLoadingWarehouses || isLoadingShipments;
+
   return (
     <div className="flex min-h-screen w-full flex-col">
       <Header title="Digital Twin" />
       <main className="flex-1 p-4 sm:p-6">
         <Card className="h-[80vh]">
           <CardContent className="p-0 h-full">
+            {isLoading ? (
+                <Skeleton className="h-full w-full rounded-lg" />
+            ) : (
             <APIProvider apiKey={apiKey}>
               <Map
                 defaultCenter={{ lat: 39.8283, lng: -98.5795 }}
@@ -57,18 +69,19 @@ export default function DigitalTwinPage() {
                 mapId="traceright-digital-twin"
                 className="rounded-lg h-full"
               >
-                {warehouses.map((warehouse) => (
-                    <AdvancedMarker key={warehouse.id} position={warehouse.position} title={warehouse.name}>
+                {warehouses?.map((warehouse) => (
+                    <AdvancedMarker key={warehouse.id} position={{ lat: warehouse.location.latitude, lng: warehouse.location.longitude }} title={warehouse.name}>
                         <Pin backgroundColor={"#1E90FF"} glyphColor={"#FFF"} borderColor={"#1E90FF"} />
                     </AdvancedMarker>
                 ))}
-                {ordersInTransit.map((order) => (
-                    <AdvancedMarker key={order.id} position={order.position} title={`Order ${order.id}`}>
+                {shipments?.map((shipment) => (
+                    <AdvancedMarker key={shipment.id} position={{ lat: shipment.currentLocation.latitude, lng: shipment.currentLocation.longitude }} title={`Order ${shipment.orderId}`}>
                         <Pin backgroundColor={"#FFA500"} glyphColor={"#000"} borderColor={"#FFA500"} />
                     </AdvancedMarker>
                 ))}
               </Map>
             </APIProvider>
+            )}
           </CardContent>
         </Card>
       </main>
