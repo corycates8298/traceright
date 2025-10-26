@@ -18,6 +18,7 @@ import {
   TrendingUp,
   BrainCircuit,
   Map,
+  ClipboardList,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -63,6 +64,7 @@ const navGroups: NavGroup[] = [
     links: [
       { href: '/dashboard/materials', label: 'Materials', icon: Book },
       { href: '/dashboard/recipes', label: 'Recipes', icon: Factory },
+      { href: '/dashboard/batches', label: 'Batches', icon: ClipboardList },
     ],
   },
   {
