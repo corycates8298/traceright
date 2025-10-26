@@ -302,7 +302,40 @@
           }
         },
         "required": ["id", "warehouseId", "itemId", "itemType", "quantity"]
-      }
+    },
+    "Product": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Product",
+      "type": "object",
+      "description": "Represents a finished good or product.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the product."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the product."
+        },
+        "sku": {
+          "type": "string",
+          "description": "The Stock Keeping Unit for the product."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the product."
+        },
+        "pricing": {
+          "type": "number",
+          "description": "The selling price of the product."
+        },
+        "recipeId": {
+          "type": "string",
+          "description": "Reference to the Recipe used to create the product. (Relationship: Recipe 1:1 Product)"
+        }
+      },
+      "required": ["id", "name", "sku", "pricing", "recipeId"]
+    }
   },
   "auth": {
     "providers": [
@@ -447,8 +480,24 @@
             }
           ]
         }
+      },
+      {
+        "path": "/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Stores information about finished goods or products.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "The unique identifier for the product."
+            }
+          ]
+        }
       }
     ],
-    "reasoning": "The Firestore structure is designed to support the Supply Chain Command application, focusing on scalability, security, and maintainability. It incorporates denormalization for authorization independence and structural segregation for simplified security rules. The design adheres to the principle of Authorization Independence, avoiding hierarchical authorization dependencies to ensure that atomic operations (transactions/batches) are not compromised. Roles are managed directly within the database using request.auth.uid, and the structure facilitates secure list operations (QAPs). Each path is structured to allow for simple and robust security rules, focusing on clarity and predictability.\n\nSpecifically:\n\n*   **Users**: A top-level `/users` collection stores public profile information and application-specific roles. The document ID for each user is their Firebase Auth UID, creating a secure link between the authentication record and the database profile.\n*   **Suppliers:** Suppliers are stored in a top-level collection `/suppliers`. Documents related to a supplier (e.g., documents) are stored in subcollections like `/suppliers/{supplierId}/documents`. The `supplierId` is used as a path-based ownership model.\n*   **Materials and Forecasts:** Materials are stored in the `/materials` collection, and forecasts associated with each material are stored in the subcollection `/materials/{materialId}/forecasts`.  This allows easy querying of forecasts for a specific material.\n*   **Orders:** Orders are stored in a `/orders` collection.\n*   **UiSchemas:** UI Schemas are stored in a `/uiSchemas` collection, allowing for dynamic UI rendering.\n*   **Inventory:** Inventory is stored in a top-level `/inventory` collection, essential for tracking stock levels across various warehouses.\n\nThis structure enables secure listing and querying, supports atomic operations, and facilitates straightforward security rule implementation."
+    "reasoning": "The Firestore structure is designed to support the Supply Chain Command application, focusing on scalability, security, and maintainability. It incorporates denormalization for authorization independence and structural segregation for simplified security rules. The design adheres to the principle of Authorization Independence, avoiding hierarchical authorization dependencies to ensure that atomic operations (transactions/batches) are not compromised. Roles are managed directly within the database using request.auth.uid, and the structure facilitates secure list operations (QAPs). Each path is structured to allow for simple and robust security rules, focusing on clarity and predictability.\n\nSpecifically:\n\n*   **Users**: A top-level `/users` collection stores public profile information and application-specific roles. The document ID for each user is their Firebase Auth UID, creating a secure link between the authentication record and the database profile.\n*   **Suppliers:** Suppliers are stored in a top-level collection `/suppliers`. Documents related to a supplier (e.g., documents) are stored in subcollections like `/suppliers/{supplierId}/documents`. The `supplierId` is used as a path-based ownership model.\n*   **Materials and Forecasts:** Materials are stored in the `/materials` collection, and forecasts associated with each material are stored in the subcollection `/materials/{materialId}/forecasts`.  This allows easy querying of forecasts for a specific material.\n*   **Orders:** Orders are stored in a `/orders` collection.\n*   **UiSchemas:** UI Schemas are stored in a `/uiSchemas` collection, allowing for dynamic UI rendering.\n*   **Inventory:** Inventory is stored in a top-level `/inventory` collection, essential for tracking stock levels across various warehouses.\n*   **Products:** Products are stored in a top-level `/products` collection.\n\nThis structure enables secure listing and querying, supports atomic operations, and facilitates straightforward security rule implementation."
   }
 }
