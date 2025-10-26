@@ -9,6 +9,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -20,6 +21,7 @@ import { Logo } from '@/components/icons';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
+import Image from 'next/image';
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState('');
@@ -131,6 +133,15 @@ export default function SignupPage() {
             </Link>
           </div>
         </CardContent>
+         <CardFooter className="flex-col gap-2 pt-6">
+          <p className="text-xs text-muted-foreground">Brought to you by</p>
+          <Image
+            src="/truvera-logo.png"
+            alt="Truvera Solutions Inc. Logo"
+            width={120}
+            height={40}
+          />
+        </CardFooter>
       </Card>
     </div>
   );

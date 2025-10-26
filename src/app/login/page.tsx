@@ -9,6 +9,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -18,7 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Logo } from '@/components/icons';
 import { onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
-
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -107,6 +108,15 @@ export default function LoginPage() {
             </Link>
           </div>
         </CardContent>
+        <CardFooter className="flex-col gap-2 pt-6">
+          <p className="text-xs text-muted-foreground">Brought to you by</p>
+          <Image
+            src="/truvera-logo.png"
+            alt="Truvera Solutions Inc. Logo"
+            width={120}
+            height={40}
+          />
+        </CardFooter>
       </Card>
     </div>
   );
