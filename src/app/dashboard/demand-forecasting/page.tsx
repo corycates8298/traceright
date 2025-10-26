@@ -105,7 +105,7 @@ export default function DemandForecastingPage() {
                   defaultValue="Seasonality: 40%, Promotions: 30%, Economic Indicators: 20%"
                 />
               </div>
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading} className="w-full">
                 {isLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
