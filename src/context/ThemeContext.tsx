@@ -74,7 +74,7 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
     palette: palettes[0],
     font: fonts[0],
     gradient: gradients[0],
-    backgroundType: 'gradient',
+    backgroundType: 'none',
     solidColor: solidColors[0],
     pattern: patterns[0],
     patternOpacity: 20,
@@ -135,7 +135,16 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const root = document.documentElement;
+    const body = document.body;
     let backgroundStyle = '';
+    const baseBackgroundColor = `hsl(var(--background))`;
+
+    // Always clear pattern classes first
+    patterns.forEach(p => {
+        body.classList.remove(`pattern-${p.name.toLowerCase()}`);
+    });
+    body.style.setProperty('--pattern-opacity', '0');
+
 
     switch (theme.backgroundType) {
       case 'solid':
@@ -146,53 +155,37 @@ export const ThemeProvider = ({ children }: { children: ReactNode }) => {
         const { angle, startPosition, endPosition, intensity } = theme.equalizer;
         const transparentColor = 'rgba(0,0,0,0)';
         
-        // This creates a transparent version of the primary color to respect intensity
         const primaryColorWithIntensity = `rgba(${parseInt(primaryColor.slice(1,3), 16)}, ${parseInt(primaryColor.slice(3,5), 16)}, ${parseInt(primaryColor.slice(5,7), 16)}, ${intensity / 100})`;
 
+        let gradientValue = '';
         switch (theme.gradient.name) {
           case 'Linear':
           case 'Diagonal':
             const effectiveAngle = theme.gradient.name === 'Diagonal' ? angle + 45 : angle;
-            backgroundStyle = `linear-gradient(${effectiveAngle}deg, ${primaryColorWithIntensity} ${startPosition}%, ${transparentColor} ${endPosition}%)`;
+            gradientValue = `linear-gradient(${effectiveAngle}deg, ${primaryColorWithIntensity} ${startPosition}%, ${transparentColor} ${endPosition}%)`;
             break;
           case 'Radial':
-            backgroundStyle = `radial-gradient(circle, ${primaryColorWithIntensity} ${startPosition}%, ${transparentColor} ${endPosition}%)`;
+            gradientValue = `radial-gradient(circle, ${primaryColorWithIntensity} ${startPosition}%, ${transparentColor} ${endPosition}%)`;
             break;
           case 'Conic':
-             backgroundStyle = `conic-gradient(from ${angle}deg, ${primaryColorWithIntensity} ${startPosition}%, ${transparentColor} ${endPosition}%)`;
+             gradientValue = `conic-gradient(from ${angle}deg, ${primaryColorWithIntensity} ${startPosition}%, ${transparentColor} ${endPosition}%)`;
             break;
         }
+        // Layer the gradient on top of the base background color
+        backgroundStyle = `${gradientValue}, ${baseBackgroundColor}`;
         break;
       case 'pattern':
-        root.style.setProperty('--pattern-opacity', `${theme.patternOpacity / 100}`);
-        root.classList.forEach(cls => {
-            if(patterns.some(p => `pattern-${p.name.toLowerCase()}` === cls)) {
-                root.classList.remove(cls);
-            }
-        });
-        root.classList.add(`pattern-${theme.pattern.name.toLowerCase()}`);
+        body.classList.add(`pattern-${theme.pattern.name.toLowerCase()}`);
+        body.style.setProperty('--pattern-opacity', `${theme.patternOpacity / 100}`);
         backgroundStyle = `var(--pattern-bg)`;
         break;
       case 'none':
       default:
-        root.classList.forEach(cls => {
-            if(patterns.some(p => `pattern-${p.name.toLowerCase()}` === cls)) {
-                root.classList.remove(cls);
-            }
-        });
-        backgroundStyle = 'hsl(var(--background))';
+        backgroundStyle = baseBackgroundColor;
         break;
     }
     
-    root.style.background = backgroundStyle;
-    
-    if(theme.backgroundType !== 'pattern') {
-        root.classList.forEach(cls => {
-            if(patterns.some(p => `pattern-${p.name.toLowerCase()}` === cls)) {
-                root.classList.remove(cls);
-            }
-        });
-    }
+    body.style.background = backgroundStyle;
 
   }, [theme]);
 

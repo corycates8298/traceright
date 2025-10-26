@@ -22,7 +22,7 @@ export function ThemeCustomizer() {
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetContent className="w-full sm:max-w-md p-0">
+      <SheetContent className="w-full sm:max-w-md p-0 bg-background">
         <SheetHeader className="p-6 border-b">
           <SheetTitle>Theme Studio</SheetTitle>
           <SheetDescription>

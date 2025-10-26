@@ -19,14 +19,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <ThemeProvider>
-        <body className={`${inter.variable} font-sans antialiased`}>
-            <FirebaseClientProvider>
-              {children}
-              <Toaster />
-            </FirebaseClientProvider>
-        </body>
-      </ThemeProvider>
+      <body className={`${inter.variable} font-sans antialiased`}>
+        <ThemeProvider>
+          <FirebaseClientProvider>
+            {children}
+            <Toaster />
+          </FirebaseClientProvider>
+        </ThemeProvider>
+      </body>
     </html>
   );
 }
