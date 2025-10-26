@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth, initiateEmailSignUp } from '@/firebase';
+import { useAuth } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -18,6 +18,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Logo } from '@/components/icons';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
+import { useFirestore } from '@/firebase';
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState('');
@@ -27,6 +29,7 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const auth = useAuth();
+  const firestore = useFirestore();
   const { toast } = useToast();
 
   const handleSignUp = async (e: React.FormEvent) => {
@@ -42,8 +45,22 @@ export default function SignupPage() {
     setIsLoading(true);
     try {
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(userCredential.user, {
-            displayName: `${firstName} ${lastName}`.trim()
+        const user = userCredential.user;
+        const displayName = `${firstName} ${lastName}`.trim();
+
+        await updateProfile(user, {
+            displayName: displayName,
+        });
+
+        // Create a user profile document in Firestore
+        const userRef = doc(firestore, 'users', user.uid);
+        await setDoc(userRef, {
+            id: user.uid,
+            email: user.email,
+            displayName: displayName,
+            photoURL: user.photoURL,
+            role: 'Reader', // Default role for new users
+            createdAt: serverTimestamp(),
         });
         
         toast({

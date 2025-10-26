@@ -22,6 +22,7 @@ export async function clearDatabase(): Promise<ClearDatabaseOutput> {
 }
 
 const COLLECTIONS_TO_DELETE = [
+    'users',
     'suppliers', 
     'materials', 
     'recipes', 

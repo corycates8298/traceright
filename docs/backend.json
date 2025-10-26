@@ -230,6 +230,43 @@
         "forecastDate",
         "predictedDemand"
       ]
+    },
+     "UserProfile": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User Profile",
+      "type": "object",
+      "description": "Represents a user's profile in the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the user, corresponding to Firebase Auth UID."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "displayName": {
+          "type": "string",
+          "description": "The user's full display name."
+        },
+        "photoURL": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the user's profile picture."
+        },
+        "role": {
+          "type": "string",
+          "description": "The user's role in the system.",
+          "enum": ["Reader", "Editor", "Supervisor", "Admin"]
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the user profile was created."
+        }
+      },
+      "required": ["id", "email", "displayName", "role", "createdAt"]
     }
   },
   "auth": {
@@ -240,6 +277,22 @@
   },
   "firestore": {
     "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "UserProfile",
+          "schema": {
+            "$ref": "#/backend/entities/UserProfile"
+          },
+          "description": "Stores user profile information, including their role. The document ID is the user's Firebase Auth UID.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The user's unique Firebase Authentication ID."
+            }
+          ]
+        }
+      },
       {
         "path": "/suppliers/{supplierId}",
         "definition": {
@@ -345,6 +398,6 @@
         }
       }
     ],
-    "reasoning": "The Firestore structure is designed to support the Supply Chain Command application, focusing on scalability, security, and maintainability. It incorporates denormalization for authorization independence and structural segregation for simplified security rules. The design adheres to the principle of Authorization Independence, avoiding hierarchical authorization dependencies to ensure that atomic operations (transactions/batches) are not compromised. Roles are managed directly within the database using request.auth.uid, and the structure facilitates secure list operations (QAPs). Each path is structured to allow for simple and robust security rules, focusing on clarity and predictability.\n\nSpecifically:\n\n*   **Suppliers:** Suppliers are stored in a top-level collection `/suppliers`. Documents related to a supplier (e.g., documents) are stored in subcollections like `/suppliers/{supplierId}/documents`. The `supplierId` is used as a path-based ownership model.\n*   **Materials and Forecasts:** Materials are stored in the `/materials` collection, and forecasts associated with each material are stored in the subcollection `/materials/{materialId}/forecasts`.  This allows easy querying of forecasts for a specific material.\n*   **Orders:** Orders are stored in a `/orders` collection.\n*   **UiSchemas:** UI Schemas are stored in a `/uiSchemas` collection, allowing for dynamic UI rendering.\n\nThis structure enables secure listing and querying, supports atomic operations, and facilitates straightforward security rule implementation."
+    "reasoning": "The Firestore structure is designed to support the Supply Chain Command application, focusing on scalability, security, and maintainability. It incorporates denormalization for authorization independence and structural segregation for simplified security rules. The design adheres to the principle of Authorization Independence, avoiding hierarchical authorization dependencies to ensure that atomic operations (transactions/batches) are not compromised. Roles are managed directly within the database using request.auth.uid, and the structure facilitates secure list operations (QAPs). Each path is structured to allow for simple and robust security rules, focusing on clarity and predictability.\n\nSpecifically:\n\n*   **Users**: A top-level `/users` collection stores public profile information and application-specific roles. The document ID for each user is their Firebase Auth UID, creating a secure link between the authentication record and the database profile.\n*   **Suppliers:** Suppliers are stored in a top-level collection `/suppliers`. Documents related to a supplier (e.g., documents) are stored in subcollections like `/suppliers/{supplierId}/documents`. The `supplierId` is used as a path-based ownership model.\n*   **Materials and Forecasts:** Materials are stored in the `/materials` collection, and forecasts associated with each material are stored in the subcollection `/materials/{materialId}/forecasts`.  This allows easy querying of forecasts for a specific material.\n*   **Orders:** Orders are stored in a `/orders` collection.\n*   **UiSchemas:** UI Schemas are stored in a `/uiSchemas` collection, allowing for dynamic UI rendering.\n\nThis structure enables secure listing and querying, supports atomic operations, and facilitates straightforward security rule implementation."
   }
 }

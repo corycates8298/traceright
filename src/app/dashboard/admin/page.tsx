@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useUser } from '@/firebase';
+import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { Header } from '@/components/layout/header';
 import {
   Card,
@@ -26,12 +26,22 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { doc } from 'firebase/firestore';
+import type { UserProfile } from '@/types';
 
 export default function AdminPage() {
   const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
   const { toast } = useToast();
   const [isSeeding, setIsSeeding] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+
+  const userProfileRef = useMemoFirebase(
+    () => (user ? doc(firestore, 'users', user.uid) : null),
+    [user, firestore]
+  );
+  const { data: userProfile, isLoading: isProfileLoading } =
+    useDoc<UserProfile>(userProfileRef);
 
   const handleSeed = async () => {
     setIsSeeding(true);
@@ -81,8 +91,8 @@ export default function AdminPage() {
     }
   };
 
-  // We need to wait for the user to be loaded before checking roles
-  if (isUserLoading) {
+  const isLoading = isUserLoading || isProfileLoading;
+  if (isLoading) {
     return (
       <div className="flex min-h-screen w-full flex-col">
         <Header title="Admin" />
@@ -100,8 +110,7 @@ export default function AdminPage() {
     );
   }
 
-  // TODO: Replace with custom claims role check `user.claims.role` once implemented
-  const isAdmin = user?.email === 'admin@traceright.ai';
+  const isAdmin = userProfile?.role === 'Admin';
 
   if (!isAdmin) {
     return (
