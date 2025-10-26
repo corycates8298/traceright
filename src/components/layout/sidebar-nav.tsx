@@ -121,15 +121,14 @@ export function SidebarNav() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <SidebarMenuButton
-          asChild
-          isActive={pathname === '/dashboard'}
-        >
-          <Link href="/dashboard">
-            <Home />
-            <span>Dashboard</span>
-          </Link>
-        </SidebarMenuButton>
+        <Link href="/dashboard" passHref>
+          <SidebarMenuButton asChild isActive={pathname === '/dashboard'}>
+            <span>
+              <Home />
+              <span>Dashboard</span>
+            </span>
+          </SidebarMenuButton>
+        </Link>
       </SidebarMenuItem>
 
       {navGroups.map((group) => (
@@ -149,18 +148,20 @@ export function SidebarNav() {
                   const isActive = pathname.startsWith(link.href);
                   return (
                     <SidebarMenuItem key={link.href}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
-                        tooltip={{ children: link.label }}
-                        variant="ghost"
-                        className='justify-start'
-                      >
-                        <Link href={link.href}>
-                          <link.icon />
-                          <span>{link.label}</span>
-                        </Link>
-                      </SidebarMenuButton>
+                      <Link href={link.href} passHref>
+                        <SidebarMenuButton
+                          asChild
+                          isActive={isActive}
+                          tooltip={{ children: link.label }}
+                          variant="ghost"
+                          className='justify-start'
+                        >
+                          <span>
+                            <link.icon />
+                            <span>{link.label}</span>
+                          </span>
+                        </SidebarMenuButton>
+                      </Link>
                     </SidebarMenuItem>
                   );
                 })}
