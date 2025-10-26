@@ -158,7 +158,7 @@ export default function ProactiveAgentPage() {
 
                 <div>
                   <h4 className="font-semibold mb-2">Suggested Purchase Order</h4>
-                  <p className="text-sm text-muted-foreground bg-slate-100 p-3 rounded-md">
+                  <p className="text-sm text-muted-foreground bg-slate-100 dark:bg-slate-800 p-3 rounded-md">
                     {result.suggestedPurchaseOrder}
                   </p>
                 </div>
