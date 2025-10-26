@@ -1,6 +1,36 @@
 import type { LucideIcon } from 'lucide-react';
 
-export type Layout = 'analyst' | 'executive' | 'warehouse';
+export type Layout = 'analyst' | 'executive' | 'warehouse' | 'custom';
+
+// Widget Dashboard Builder Types
+export type WidgetType =
+  | 'kpi-card'
+  | 'area-chart'
+  | 'bar-chart'
+  | 'line-chart'
+  | 'pie-chart'
+  | 'activity-feed'
+  | 'data-table'
+  | 'text-header';
+
+export type WidgetConfig = {
+  id: string;
+  type: WidgetType;
+  title: string;
+  gridConfig: {
+    w: number; // width in grid units
+    h: number; // height in grid units
+    x: number; // x position in grid units
+    y: number; // y position in grid units
+  };
+};
+
+export type CustomDashboard = {
+  id: string;
+  name: string;
+  widgets: WidgetConfig[];
+};
+
 
 // Core Supply Chain & Flow
 export type Supplier = {

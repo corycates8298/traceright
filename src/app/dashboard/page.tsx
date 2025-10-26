@@ -3,17 +3,20 @@
 import { useState } from 'react';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
-import { Settings2, Eye, Briefcase, CircleDotDashed } from 'lucide-react';
-import type { Layout } from '@/types';
+import { Settings2, Eye, Briefcase, CircleDotDashed, LayoutGrid } from 'lucide-react';
+import type { Layout, WidgetConfig } from '@/types';
 import AnalystView from '@/components/dashboard/analyst-view';
 import ExecutiveView from '@/components/dashboard/executive-view';
 import WarehouseOpsView from '@/components/dashboard/warehouse-ops-view';
+import CustomDashboardView from '@/components/dashboard/custom-view';
 import { useTheme } from '@/context/ThemeContext';
-
+import { WidgetBuilder } from '@/components/dashboard/widget-builder';
 
 export default function DashboardPage() {
   const [layout, setLayout] = useState<Layout>('analyst');
   const { open, setOpen } = useTheme();
+  const [isBuilderOpen, setIsBuilderOpen] = useState(false);
+  const [widgets, setWidgets] = useState<WidgetConfig[]>([]);
 
   const renderLayout = () => {
     switch (layout) {
@@ -23,10 +26,16 @@ export default function DashboardPage() {
         return <ExecutiveView />;
       case 'warehouse':
         return <WarehouseOpsView />;
+      case 'custom':
+        return <CustomDashboardView widgets={widgets} setWidgets={setWidgets} />;
       default:
         return <AnalystView />;
     }
   };
+
+  const getButtonClass = (buttonLayout: Layout) => {
+    return layout === buttonLayout ? 'bg-primary/10 border-primary/50 text-primary' : '';
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -41,7 +50,7 @@ export default function DashboardPage() {
               variant={layout === 'analyst' ? 'outline' : 'ghost'}
               size="sm"
               onClick={() => setLayout('analyst')}
-              className={layout === 'analyst' ? 'bg-primary/10 border-primary/50 text-primary' : ''}
+              className={getButtonClass('analyst')}
             >
               <Eye className="mr-2 h-4 w-4" />
               Analyst View
@@ -50,7 +59,7 @@ export default function DashboardPage() {
               variant={layout === 'executive' ? 'outline' : 'ghost'}
               size="sm"
               onClick={() => setLayout('executive')}
-               className={layout === 'executive' ? 'bg-primary/10 border-primary/50 text-primary' : ''}
+               className={getButtonClass('executive')}
             >
               <Briefcase className="mr-2 h-4 w-4" />
               Executive Summary
@@ -59,13 +68,24 @@ export default function DashboardPage() {
               variant={layout === 'warehouse' ? 'outline' : 'ghost'}
               size="sm"
               onClick={() => setLayout('warehouse')}
-               className={layout === 'warehouse' ? 'bg-primary/10 border-primary/50 text-primary' : ''}
+               className={getButtonClass('warehouse')}
             >
               <CircleDotDashed className="mr-2 h-4 w-4" />
               Warehouse Ops
             </Button>
-            <Button variant="ghost" size="sm">
+             <Button
+              variant={layout === 'custom' ? 'outline' : 'ghost'}
+              size="sm"
+              onClick={() => setLayout('custom')}
+               className={getButtonClass('custom')}
+            >
+              <LayoutGrid className="mr-2 h-4 w-4" />
               Custom
+              {layout === 'custom' && widgets.length > 0 && (
+                 <span className="ml-2 bg-primary/20 text-primary rounded-full px-2 py-0.5 text-xs">
+                    {widgets.length}
+                  </span>
+              )}
             </Button>
             <Button onClick={() => setOpen(true)}>
               <Settings2 className="mr-2 h-4 w-4" />
@@ -76,6 +96,7 @@ export default function DashboardPage() {
 
         {renderLayout()}
       </main>
+      <WidgetBuilder isOpen={isBuilderOpen} setIsOpen={setIsBuilderOpen} widgets={widgets} setWidgets={setWidgets} />
     </div>
   );
 }
