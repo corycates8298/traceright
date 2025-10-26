@@ -121,12 +121,15 @@ export function SidebarNav() {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <Link href="/dashboard" passHref legacyBehavior>
-          <SidebarMenuButton isActive={pathname === '/dashboard'}>
+        <SidebarMenuButton
+          asChild
+          isActive={pathname === '/dashboard'}
+        >
+          <Link href="/dashboard">
             <Home />
             <span>Dashboard</span>
-          </SidebarMenuButton>
-        </Link>
+          </Link>
+        </SidebarMenuButton>
       </SidebarMenuItem>
 
       {navGroups.map((group) => (
@@ -146,17 +149,18 @@ export function SidebarNav() {
                   const isActive = pathname.startsWith(link.href);
                   return (
                     <SidebarMenuItem key={link.href}>
-                      <Link href={link.href} passHref legacyBehavior>
-                        <SidebarMenuButton
-                          isActive={isActive}
-                          tooltip={{ children: link.label }}
-                          variant="ghost"
-                          className='justify-start'
-                        >
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        tooltip={{ children: link.label }}
+                        variant="ghost"
+                        className='justify-start'
+                      >
+                        <Link href={link.href}>
                           <link.icon />
                           <span>{link.label}</span>
-                        </SidebarMenuButton>
-                      </Link>
+                        </Link>
+                      </SidebarMenuButton>
                     </SidebarMenuItem>
                   );
                 })}
