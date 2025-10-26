@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { Header } from '@/components/layout/header';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,6 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Upload, CheckCircle, XCircle } from 'lucide-react';
@@ -28,6 +27,15 @@ export default function VisualInspectionPage() {
   const [preview, setPreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  
+  const defaultImage = PlaceHolderImages.find(p => p.id === 'delivery-photo-1');
+
+  useEffect(() => {
+    if (defaultImage && !preview) {
+      setPreview(defaultImage.imageUrl);
+    }
+  }, [defaultImage, preview]);
+
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -54,7 +62,21 @@ export default function VisualInspectionPage() {
     setResult(null);
 
     try {
-      const response = await aiVisualInspection({ photoDataUri: preview });
+      // The AI flow expects a Base64 data URI. If the preview is a direct URL (like from placeholder),
+      // we need to fetch and convert it first.
+      let imageDataUri = preview;
+      if (!preview.startsWith('data:')) {
+        const response = await fetch(preview);
+        const blob = await response.blob();
+        imageDataUri = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+      }
+      
+      const response = await aiVisualInspection({ photoDataUri: imageDataUri });
       setResult(response);
     } catch (error) {
       console.error('Error with visual inspection:', error);
@@ -67,8 +89,6 @@ export default function VisualInspectionPage() {
       setIsLoading(false);
     }
   };
-  
-  const defaultImage = PlaceHolderImages.find(p => p.id === 'delivery-photo-1');
 
   return (
     <div className="flex min-h-screen w-full flex-col">
@@ -85,15 +105,8 @@ export default function VisualInspectionPage() {
             <div className="aspect-video w-full rounded-lg border-2 border-dashed flex items-center justify-center overflow-hidden">
               {preview ? (
                 <Image src={preview} alt="Delivery preview" width={600} height={400} className="object-contain h-full w-full" />
-              ) : defaultImage && (
-                 <Image
-                    src={defaultImage.imageUrl}
-                    alt={defaultImage.description}
-                    width={600}
-                    height={400}
-                    className="object-cover h-full w-full opacity-50"
-                    data-ai-hint={defaultImage.imageHint}
-                  />
+              ) : (
+                 <div className="text-muted-foreground">Image preview</div>
               )}
             </div>
             <Input
@@ -183,7 +196,7 @@ export default function VisualInspectionPage() {
                       No analysis performed
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      Upload an image and click "Analyze" to see results.
+                      Upload or select an image and click "Analyze" to see results.
                     </p>
                   </div>
                 </div>
