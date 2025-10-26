@@ -54,6 +54,9 @@ export default function SignupPage() {
             displayName: displayName,
         });
 
+        // Determine user role
+        const userRole = email === 'director@truverasolutions.info' ? 'Admin' : 'Reader';
+
         // Create a user profile document in Firestore
         const userRef = doc(firestore, 'users', user.uid);
         await setDoc(userRef, {
@@ -61,7 +64,7 @@ export default function SignupPage() {
             email: user.email,
             displayName: displayName,
             photoURL: user.photoURL,
-            role: 'Reader', // Default role for new users
+            role: userRole,
             createdAt: serverTimestamp(),
         });
         
