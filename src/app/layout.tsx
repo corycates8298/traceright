@@ -1,15 +1,13 @@
-import type { Metadata } from 'next';
-import './globals.css';
-import { Toaster } from '@/components/ui/toaster';
-import { Inter } from 'next/font/google';
-import { FirebaseClientProvider } from '@/firebase';
-import { ThemeProvider } from '@/context/ThemeContext';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+import type { Metadata } from "next";
+import { Inter } from "next/font/google";
+import "./globals.css";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: 'TraceRight.ai',
-  description: 'An intelligent supply chain management platform.',
+  title: "Supply Chain Command",
+  description: "An intelligent supply chain management platform.",
 };
 
 export default function RootLayout({
@@ -18,15 +16,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
-        <ThemeProvider>
-          <FirebaseClientProvider>
-            {children}
-            <Toaster />
-          </FirebaseClientProvider>
-        </ThemeProvider>
-      </body>
+    <html lang="en">
+      <body className={inter.className}>{children}</body>
     </html>
   );
 }
