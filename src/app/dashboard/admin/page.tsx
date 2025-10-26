@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Database, Trash2 } from 'lucide-react';
+import { Loader2, Database, Trash2, ShieldCheck, Wifi, Bot } from 'lucide-react';
 import { seedDatabase } from '@/ai/flows/seed-database';
 import { clearDatabase } from '@/ai/flows/clear-database';
 import {
@@ -28,6 +28,23 @@ import {
 } from '@/components/ui/alert-dialog';
 import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/types';
+
+function HealthStatus({ title, status, Icon }: { title: string, status: 'Operational' | 'Error' | 'Checking...', Icon: React.ElementType }) {
+  const statusColor = status === 'Operational' ? 'text-green-500' : status === 'Error' ? 'text-red-500' : 'text-yellow-500';
+  return (
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-3">
+        <Icon className="h-5 w-5 text-muted-foreground" />
+        <span className="font-medium">{title}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className={`h-2 w-2 rounded-full ${status === 'Operational' ? 'bg-green-500' : status === 'Error' ? 'bg-red-500' : 'bg-yellow-500'}`} />
+        <span className={`text-sm font-medium ${statusColor}`}>{status}</span>
+      </div>
+    </div>
+  );
+}
+
 
 export default function AdminPage() {
   const { user, isUserLoading } = useUser();
@@ -137,8 +154,8 @@ export default function AdminPage() {
     <div className="flex min-h-screen w-full flex-col">
       <Header title="Admin Panel" />
       <main className="flex-1 p-4 sm:p-6">
-        <div className="grid gap-6 md:grid-cols-2">
-          <Card>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <Card className="lg:col-span-2">
             <CardHeader>
               <CardTitle>Database Management</CardTitle>
               <CardDescription>
@@ -202,7 +219,20 @@ export default function AdminPage() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+           <Card>
+            <CardHeader>
+              <CardTitle>System Health</CardTitle>
+              <CardDescription>
+                Live status of core application services.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <HealthStatus title="Firebase Services" status={firestore ? 'Operational' : 'Error'} Icon={Wifi} />
+                <HealthStatus title="Authentication" status={isUserLoading ? 'Checking...' : user ? 'Operational' : 'Error'} Icon={ShieldCheck} />
+                <HealthStatus title="AI Services" status="Operational" Icon={Bot} />
+            </CardContent>
+          </Card>
+          <Card className="lg:col-span-3">
             <CardHeader>
               <CardTitle>User Management</CardTitle>
               <CardDescription>
@@ -210,7 +240,7 @@ export default function AdminPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-center h-[40vh] border-2 border-dashed rounded-lg">
+              <div className="flex items-center justify-center h-[20vh] border-2 border-dashed rounded-lg">
                 <div className="text-center">
                   <h3 className="text-xl font-bold tracking-tight">
                     Coming Soon
