@@ -231,7 +231,7 @@
         "predictedDemand"
       ]
     },
-     "UserProfile": {
+    "UserProfile": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "User Profile",
       "type": "object",
@@ -258,7 +258,12 @@
         "role": {
           "type": "string",
           "description": "The user's role in the system.",
-          "enum": ["Reader", "Editor", "Supervisor", "Admin"]
+          "enum": [
+            "Reader",
+            "Editor",
+            "Supervisor",
+            "Admin"
+          ]
         },
         "createdAt": {
           "type": "string",
@@ -266,42 +271,57 @@
           "description": "The timestamp when the user profile was created."
         }
       },
-      "required": ["id", "email", "displayName", "role", "createdAt"]
+      "required": [
+        "id",
+        "email",
+        "displayName",
+        "role",
+        "createdAt"
+      ]
     },
     "Inventory": {
-        "$schema": "http://json-schema.org/draft-07/schema#",
-        "title": "Inventory",
-        "type": "object",
-        "description": "Represents the stock of a specific item in a specific warehouse.",
-        "properties": {
-          "id": {
-            "type": "string",
-            "description": "Unique identifier for the inventory record, usually a composite key."
-          },
-          "warehouseId": {
-            "type": "string",
-            "description": "Reference to the Warehouse where the stock is located."
-          },
-          "itemId": {
-            "type": "string",
-            "description": "Reference to the Material or Product being stocked."
-          },
-          "itemType": {
-            "type": "string",
-            "description": "The type of item being stocked.",
-            "enum": ["material", "product"]
-          },
-          "quantity": {
-            "type": "number",
-            "description": "The quantity of the item in stock."
-          },
-          "lastRestocked": {
-            "type": "string",
-            "format": "date-time",
-            "description": "The timestamp when the item was last restocked."
-          }
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Inventory",
+      "type": "object",
+      "description": "Represents the stock of a specific item in a specific warehouse.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the inventory record, usually a composite key."
         },
-        "required": ["id", "warehouseId", "itemId", "itemType", "quantity"]
+        "warehouseId": {
+          "type": "string",
+          "description": "Reference to the Warehouse where the stock is located."
+        },
+        "itemId": {
+          "type": "string",
+          "description": "Reference to the Material or Product being stocked."
+        },
+        "itemType": {
+          "type": "string",
+          "description": "The type of item being stocked.",
+          "enum": [
+            "material",
+            "product"
+          ]
+        },
+        "quantity": {
+          "type": "number",
+          "description": "The quantity of the item in stock."
+        },
+        "lastRestocked": {
+          "type": "string",
+          "format": "date-time",
+          "description": "The timestamp when the item was last restocked."
+        }
+      },
+      "required": [
+        "id",
+        "warehouseId",
+        "itemId",
+        "itemType",
+        "quantity"
+      ]
     },
     "Product": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -334,7 +354,13 @@
           "description": "Reference to the Recipe used to create the product. (Relationship: Recipe 1:1 Product)"
         }
       },
-      "required": ["id", "name", "sku", "pricing", "recipeId"]
+      "required": [
+        "id",
+        "name",
+        "sku",
+        "pricing",
+        "recipeId"
+      ]
     },
     "Recipe": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -369,11 +395,19 @@
                 "description": "The quantity of the material required."
               }
             },
-            "required": ["materialId", "quantity"]
+            "required": [
+              "materialId",
+              "quantity"
+            ]
           }
         }
       },
-      "required": ["id", "name", "productId", "ingredients"]
+      "required": [
+        "id",
+        "name",
+        "productId",
+        "ingredients"
+      ]
     }
   },
   "auth": {
@@ -383,176 +417,66 @@
     ]
   },
   "firestore": {
-    "structure": [
-      {
-        "path": "/users/{userId}",
-        "definition": {
-          "entityName": "UserProfile",
-          "schema": {
-            "$ref": "#/backend/entities/UserProfile"
-          },
-          "description": "Stores user profile information, including their role. The document ID is the user's Firebase Auth UID.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The user's unique Firebase Authentication ID."
-            }
-          ]
-        }
+    "/users/{userId}": {
+      "schema": {
+        "$ref": "#/backend/entities/UserProfile"
       },
-      {
-        "path": "/suppliers/{supplierId}",
-        "definition": {
-          "entityName": "Supplier",
-          "schema": {
-            "$ref": "#/backend/entities/Supplier"
-          },
-          "description": "Stores supplier information. Uses supplierId as the document ID to establish path-based ownership.",
-          "params": [
-            {
-              "name": "supplierId",
-              "description": "The unique identifier for the supplier."
-            }
-          ]
-        }
+      "description": "Stores user profile information, including their role. The document ID is the user's Firebase Auth UID."
+    },
+    "/suppliers/{supplierId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Supplier"
       },
-      {
-        "path": "/suppliers/{supplierId}/documents/{documentId}",
-        "definition": {
-          "entityName": "Document",
-          "schema": {
-            "$ref": "#/backend/entities/Document"
-          },
-          "description": "Stores documents related to a specific supplier. Uses supplierId from parent and documentId for the document itself. Enables listing documents scoped to a supplier.",
-          "params": [
-            {
-              "name": "supplierId",
-              "description": "The unique identifier for the supplier."
-            },
-            {
-              "name": "documentId",
-              "description": "The unique identifier for the document."
-            }
-          ]
-        }
+      "description": "Stores supplier information. Uses supplierId as the document ID to establish path-based ownership."
+    },
+    "/suppliers/{supplierId}/documents/{documentId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Document"
       },
-      {
-        "path": "/materials/{materialId}",
-        "definition": {
-          "entityName": "Material",
-          "schema": {
-            "$ref": "#/backend/entities/Material"
-          },
-          "description": "Stores material information, using materialId as the document ID.",
-          "params": [
-            {
-              "name": "materialId",
-              "description": "The unique identifier for the material."
-            }
-          ]
-        }
+      "description": "Stores documents related to a specific supplier. Uses supplierId from parent and documentId for the document itself. Enables listing documents scoped to a supplier."
+    },
+    "/materials/{materialId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Material"
       },
-      {
-        "path": "/materials/{materialId}/forecasts/{forecastId}",
-        "definition": {
-          "entityName": "Forecast",
-          "schema": {
-            "$ref": "#/backend/entities/Forecast"
-          },
-          "description": "Stores forecasts related to a specific material. Enables listing forecasts scoped to a material.",
-          "params": [
-            {
-              "name": "materialId",
-              "description": "The unique identifier for the material."
-            },
-            {
-              "name": "forecastId",
-              "description": "The unique identifier for the forecast."
-            }
-          ]
-        }
+      "description": "Stores material information, using materialId as the document ID."
+    },
+    "/materials/{materialId}/forecasts/{forecastId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Forecast"
       },
-      {
-        "path": "/orders/{orderId}",
-        "definition": {
-          "entityName": "Order",
-          "schema": {
-            "$ref": "#/backend/entities/Order"
-          },
-          "description": "Stores order information. Uses orderId as the document ID.",
-          "params": [
-            {
-              "name": "orderId",
-              "description": "The unique identifier for the order."
-            }
-          ]
-        }
+      "description": "Stores forecasts related to a specific material. Enables listing forecasts scoped to a material."
+    },
+    "/orders/{orderId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Order"
       },
-      {
-        "path": "/uiSchemas/{uiSchemaId}",
-        "definition": {
-          "entityName": "UiSchema",
-          "schema": {
-            "$ref": "#/backend/entities/UiSchema"
-          },
-          "description": "Stores UI schemas for dynamic UI rendering. Uses uiSchemaId as the document ID.",
-          "params": [
-            {
-              "name": "uiSchemaId",
-              "description": "The unique identifier for the UI schema."
-            }
-          ]
-        }
+      "description": "Stores order information. Uses orderId as the document ID."
+    },
+    "/uiSchemas/{uiSchemaId}": {
+      "schema": {
+        "$ref": "#/backend/entities/UiSchema"
       },
-      {
-        "path": "/inventory/{inventoryId}",
-        "definition": {
-          "entityName": "Inventory",
-          "schema": {
-            "$ref": "#/backend/entities/Inventory"
-          },
-          "description": "Stores stock levels for materials and products at different warehouses.",
-          "params": [
-            {
-              "name": "inventoryId",
-              "description": "The unique identifier for the inventory item."
-            }
-          ]
-        }
+      "description": "Stores UI schemas for dynamic UI rendering. Uses uiSchemaId as the document ID."
+    },
+    "/inventory/{inventoryId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Inventory"
       },
-      {
-        "path": "/products/{productId}",
-        "definition": {
-          "entityName": "Product",
-          "schema": {
-            "$ref": "#/backend/entities/Product"
-          },
-          "description": "Stores information about finished goods or products.",
-          "params": [
-            {
-              "name": "productId",
-              "description": "The unique identifier for the product."
-            }
-          ]
-        }
+      "description": "Stores stock levels for materials and products at different warehouses."
+    },
+    "/products/{productId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Product"
       },
-      {
-        "path": "/recipes/{recipeId}",
-        "definition": {
-          "entityName": "Recipe",
-          "schema": {
-            "$ref": "#/backend/entities/Recipe"
-          },
-          "description": "Stores recipe and bill of materials information.",
-          "params": [
-            {
-              "name": "recipeId",
-              "description": "The unique identifier for the recipe."
-            }
-          ]
-        }
-      }
-    ],
-    "reasoning": "The Firestore structure is designed to support the Supply Chain Command application, focusing on scalability, security, and maintainability. It incorporates denormalization for authorization independence and structural segregation for simplified security rules. The design adheres to the principle of Authorization Independence, avoiding hierarchical authorization dependencies to ensure that atomic operations (transactions/batches) are not compromised. Roles are managed directly within the database using request.auth.uid, and the structure facilitates secure list operations (QAPs). Each path is structured to allow for simple and robust security rules, focusing on clarity and predictability.\n\nSpecifically:\n\n*   **Users**: A top-level `/users` collection stores public profile information and application-specific roles. The document ID for each user is their Firebase Auth UID, creating a secure link between the authentication record and the database profile.\n*   **Suppliers:** Suppliers are stored in a top-level collection `/suppliers`. Documents related to a supplier (e.g., documents) are stored in subcollections like `/suppliers/{supplierId}/documents`. The `supplierId` is used as a path-based ownership model.\n*   **Materials and Forecasts:** Materials are stored in the `/materials` collection, and forecasts associated with each material are stored in the subcollection `/materials/{materialId}/forecasts`.  This allows easy querying of forecasts for a specific material.\n*   **Orders:** Orders are stored in a `/orders` collection.\n*   **UiSchemas:** UI Schemas are stored in a `/uiSchemas` collection, allowing for dynamic UI rendering.\n*   **Inventory:** Inventory is stored in a top-level `/inventory` collection, essential for tracking stock levels across various warehouses.\n*   **Products:** Products are stored in a top-level `/products` collection.\n*   **Recipes:** Recipes are stored in a top-level `/recipes` collection.\n\nThis structure enables secure listing and querying, supports atomic operations, and facilitates straightforward security rule implementation."
+      "description": "Stores information about finished goods or products."
+    },
+    "/recipes/{recipeId}": {
+      "schema": {
+        "$ref": "#/backend/entities/Recipe"
+      },
+      "description": "Stores recipe and bill of materials information."
+    }
   }
 }
+    
