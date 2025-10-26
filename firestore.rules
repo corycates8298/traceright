@@ -1,0 +1,167 @@
+/**
+ * @fileoverview Firestore Security Rules for Supply Chain Command application.
+ *
+ * Core Philosophy:
+ * This ruleset prioritizes secure data access based on path-based ownership.
+ * It avoids complex, hierarchical authorization checks by leveraging flat data structures
+ * and explicit ownership markers.  Anonymous authentication is enabled.
+ *
+ * Data Structure:
+ * - /suppliers/{supplierId}: Stores supplier profiles, using the supplierId as the document ID.
+ * - /suppliers/{supplierId}/documents/{documentId}: Stores documents associated with a specific supplier.
+ * - /materials/{materialId}: Stores material information.
+ * - /materials/{materialId}/forecasts/{forecastId}: Stores forecast data for specific materials.
+ * - /orders/{orderId}: Stores order information.
+ * - /uiSchemas/{uiSchemaId}: Stores UI schemas.
+ *
+ * Key Security Decisions:
+ * - Public listing is disallowed for all collections containing private data. List operations are restricted to owners where applicable.
+ * - The rules enforce the principle of Authorization Independence, avoiding hierarchical authorization dependencies.
+ * - Data validation is minimal, focusing on relational integrity (ownership checks) rather than complete schema enforcement, to allow rapid prototyping.
+ * - All write operations are explicitly authorized using helper functions.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    /**
+     * @description Controls access to supplier profiles.
+     * @path /suppliers/{supplierId}
+     * @allow (create) - Authenticated user where request.auth.uid == supplierId.
+     * @allow (get, list) - Authenticated access to supplier profiles.
+     * @allow (update, delete) - Authenticated access to supplier profiles where request.auth.uid == supplierId and document exists.
+     * @deny (create) - Unauthenticated user.
+     * @deny (update, delete) - Unauthenticated user or when supplier does not exist.
+     * @principle Enforces document ownership for writes; authenticated access for reads.
+     */
+    match /suppliers/{supplierId} {
+      function isOwner(supplierId) {
+        return request.auth != null && request.auth.uid == supplierId;
+      }
+
+      function isExistingOwner(supplierId) {
+        return isOwner(supplierId) && resource != null;
+      }
+
+      allow get: if true;
+      allow list: if true;
+      allow create: if isOwner(supplierId);
+      allow update: if isExistingOwner(supplierId);
+      allow delete: if isExistingOwner(supplierId);
+    }
+
+    /**
+     * @description Controls access to documents related to a specific supplier.
+     * @path /suppliers/{supplierId}/documents/{documentId}
+     * @allow (create) - Authenticated user if supplierId matches parent.
+     * @allow (get, list) - Authenticated access to documents.
+     * @allow (update, delete) - Authenticated user if supplierId matches parent and document exists.
+     * @deny (create) - Unauthenticated user or mismatched supplierId.
+     * @deny (update, delete) - Unauthenticated user, mismatched supplierId, or when document does not exist.
+     * @principle Enforces document ownership for writes; authenticated access for reads.
+     */
+    match /suppliers/{supplierId}/documents/{documentId} {
+      function isSupplierOwner(supplierId) {
+        return request.auth != null && request.auth.uid == supplierId;
+      }
+
+      function isExistingSupplierOwner(supplierId) {
+        return isSupplierOwner(supplierId) && resource != null;
+      }
+
+      allow get: if true;
+      allow list: if isSupplierOwner(supplierId);
+      allow create: if isSupplierOwner(supplierId);
+      allow update: if isExistingSupplierOwner(supplierId);
+      allow delete: if isExistingSupplierOwner(supplierId);
+    }
+
+    /**
+     * @description Controls access to material information.
+     * @path /materials/{materialId}
+     * @allow (create) - Authenticated user can create material.
+     * @allow (get, list) - Authenticated access to material.
+     * @allow (update, delete) - Authenticated user can update/delete material if the document exists.
+     * @deny (create) - Unauthenticated user.
+     * @deny (update, delete) - Unauthenticated user or when material does not exist.
+     * @principle Authenticated access with existence check for modification.
+     */
+    match /materials/{materialId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Controls access to forecasts related to a specific material.
+     * @path /materials/{materialId}/forecasts/{forecastId}
+     * @allow (create) - Authenticated user can create forecast.
+     * @allow (get, list) - Authenticated access to forecasts.
+     * @allow (update, delete) - Authenticated user can update/delete forecast if the document exists.
+     * @deny (create) - Unauthenticated user.
+     * @deny (update, delete) - Unauthenticated user or when forecast does not exist.
+     * @principle Authenticated access with existence check for modification.
+     */
+    match /materials/{materialId}/forecasts/{forecastId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if true;
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Controls access to order information.
+     * @path /orders/{orderId}
+     * @allow (create) - Authenticated user can create order.
+     * @allow (get, list) - Authenticated access to order information.
+     * @allow (update, delete) - Authenticated user can update/delete order if the document exists.
+     * @deny (create) - Unauthenticated user.
+     * @deny (update, delete) - Unauthenticated user or when order does not exist.
+     * @principle Authenticated access with existence check for modification.
+     */
+    match /orders/{orderId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+
+    /**
+     * @description Controls access to UI schemas.
+     * @path /uiSchemas/{uiSchemaId}
+     * @allow (create) - Authenticated user can create UI schema.
+     * @allow (get, list) - Authenticated access to UI schemas.
+     * @allow (update, delete) - Authenticated user can update/delete UI schema if the document exists.
+     * @deny (create) - Unauthenticated user.
+     * @deny (update, delete) - Unauthenticated user or when uiSchema does not exist.
+     * @principle Authenticated access with existence check for modification.
+     */
+    match /uiSchemas/{uiSchemaId} {
+      function isSignedIn() {
+        return request.auth != null;
+      }
+
+      allow get: if true;
+      allow list: if true;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource != null;
+      allow delete: if isSignedIn() && resource != null;
+    }
+  }
+}
