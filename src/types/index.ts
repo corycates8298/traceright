@@ -86,6 +86,19 @@ export type Recipe = {
   updatedAt: any;
 };
 
+export type Product = {
+    id: string;
+    name: string;
+    sku: string;
+    description: string;
+    pricing: number;
+    currentStock: number;
+    recipeId: string; // doc ref to recipes
+    customFields: Record<string, any>;
+    createdAt: any;
+    updatedAt: any;
+};
+
 export type Order = {
   id: string;
   type: 'Purchase' | 'Transfer' | 'Sale';
@@ -131,8 +144,8 @@ export type Warehouse = {
   id: string;
   name: string;
   location: {
-    lat: number;
-    lng: number;
+    latitude: number;
+    longitude: number;
   };
   address: {
     street: string;
@@ -148,9 +161,10 @@ export type Warehouse = {
 };
 
 export type Inventory = {
-  id: string; // composite key: `${warehouseId}_${materialId}`
+  id: string; // composite key: `${warehouseId}_${materialId}` or `${warehouseId}_${productId}`
   warehouseId: string; // doc ref
-  materialId: string; // doc ref
+  itemId: string; // doc ref to either materials or products
+  itemType: 'material' | 'product';
   quantity: number;
   lastRestocked: any; // timestamp
   customFields: Record<string, any>;

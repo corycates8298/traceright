@@ -64,6 +64,7 @@ const navGroups: NavGroup[] = [
     links: [
       { href: '/dashboard/materials', label: 'Materials', icon: Book },
       { href: '/dashboard/recipes', label: 'Recipes', icon: Factory },
+      { href: '/dashboard/products', label: 'Products', icon: Package },
       { href: '/dashboard/batches', label: 'Batches', icon: ClipboardList },
     ],
   },
