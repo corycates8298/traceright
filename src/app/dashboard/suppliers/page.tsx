@@ -1,7 +1,6 @@
 'use client';
 
 import { useMemo } from 'react';
-import Image from 'next/image';
 import { useCollection, useMemoFirebase } from '@/firebase';
 import { useFirestore } from '@/firebase';
 import { collection, query, orderBy } from 'firebase/firestore';
@@ -33,14 +32,14 @@ function getStatusColor(status: 'Active' | 'Inactive' | 'On-hold') {
     case 'Inactive':
       return 'bg-gray-500';
     case 'On-hold':
-      return 'bg-yellow-500';
+      return 'bg-yellow-500 text-black';
   }
 }
 
 export default function SuppliersPage() {
   const firestore = useFirestore();
   const suppliersQuery = useMemoFirebase(
-    () => query(collection(firestore, 'suppliers'), orderBy('name')),
+    () => (firestore ? query(collection(firestore, 'suppliers'), orderBy('name')) : null),
     [firestore]
   );
   const { data: suppliers, isLoading } = useCollection<Supplier>(suppliersQuery);
@@ -69,7 +68,7 @@ export default function SuppliersPage() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  Array.from({ length: 4 }).map((_, i) => (
+                  Array.from({ length: 5 }).map((_, i) => (
                     <TableRow key={i}>
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -113,9 +112,9 @@ export default function SuppliersPage() {
                 )}
               </TableBody>
             </Table>
-             {!isLoading && suppliers?.length === 0 && (
+             {!isLoading && (!suppliers || suppliers.length === 0) && (
                 <div className="text-center py-12 text-muted-foreground">
-                    No suppliers found.
+                    No suppliers found. Try seeding the database in the Admin panel.
                 </div>
             )}
           </CardContent>

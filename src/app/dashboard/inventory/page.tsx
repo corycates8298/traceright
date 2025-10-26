@@ -47,27 +47,31 @@ function getStatusColor(status: string) {
 export default function InventoryPage() {
   const firestore = useFirestore();
   const inventoryQuery = useMemoFirebase(
-    () => query(collection(firestore, 'inventory'), orderBy('itemId')),
+    () => (firestore ? query(collection(firestore, 'inventory'), orderBy('itemId')) : null),
     [firestore]
   );
   const { data: inventory, isLoading } = useCollection<Inventory>(inventoryQuery);
   
   const materialsQuery = useMemoFirebase(
-    () => collection(firestore, 'materials'),
+    () => (firestore ? collection(firestore, 'materials') : null),
     [firestore]
   );
   const { data: materials } = useCollection<any>(materialsQuery);
 
   const productsQuery = useMemoFirebase(
-    () => collection(firestore, 'products'),
+    () => (firestore ? collection(firestore, 'products') : null),
     [firestore]
   );
   const { data: products } = useCollection<any>(productsQuery);
 
   const itemMap = useMemo(() => {
     const map = new Map();
-    materials?.forEach(m => map.set(m.id, m));
-    products?.forEach(p => map.set(p.id, p));
+    if (materials) {
+      materials.forEach(m => map.set(m.id, m));
+    }
+    if (products) {
+      products.forEach(p => map.set(p.id, p));
+    }
     return map;
   }, [materials, products]);
 
@@ -113,9 +117,10 @@ export default function InventoryPage() {
                     const stockItem = itemMap.get(item.itemId);
                     if (!stockItem) return null;
 
-                    const reorderPoint = stockItem.reorderPoint || stockItem.currentStock / 2; // Products might not have a reorder point
+                    const reorderPoint = stockItem.reorderPoint || (item.itemType === 'product' ? 50 : undefined);
                     const status = getStockStatus(item.quantity, reorderPoint);
-                    const stockPercentage = (item.quantity / (reorderPoint * 2)) * 100;
+                    const maxStock = reorderPoint ? reorderPoint * 2 : item.quantity * 2 || 100;
+                    const stockPercentage = (item.quantity / maxStock) * 100;
                     
                     return (
                       <TableRow key={item.id}>
@@ -138,7 +143,7 @@ export default function InventoryPage() {
                 )}
               </TableBody>
             </Table>
-            {!isLoading && inventory?.length === 0 && (
+            {!isLoading && (!inventory || inventory.length === 0) && (
                 <div className="text-center py-12 text-muted-foreground">
                     No inventory data found. Try seeding the database in the Admin panel.
                 </div>

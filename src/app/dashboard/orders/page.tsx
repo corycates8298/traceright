@@ -45,7 +45,7 @@ function getStatusVariant(status: Order['status']) {
 export default function OrdersPage() {
   const firestore = useFirestore();
   const ordersQuery = useMemoFirebase(
-    () => query(collection(firestore, 'orders'), orderBy('createdAt', 'desc')),
+    () => (firestore ? query(collection(firestore, 'orders'), orderBy('createdAt', 'desc')) : null),
     [firestore]
   );
   const { data: orders, isLoading } = useCollection<Order>(ordersQuery);
@@ -75,7 +75,7 @@ export default function OrdersPage() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
+                  Array.from({ length: 10 }).map((_, i) => (
                     <TableRow key={i}>
                       <TableCell><Skeleton className="h-5 w-24" /></TableCell>
                       <TableCell><Skeleton className="h-5 w-16" /></TableCell>
@@ -107,9 +107,9 @@ export default function OrdersPage() {
                 )}
               </TableBody>
             </Table>
-            {!isLoading && orders?.length === 0 && (
+            {!isLoading && (!orders || orders.length === 0) && (
                 <div className="text-center py-12 text-muted-foreground">
-                    No orders found.
+                    No orders found. Try seeding the database in the Admin panel.
                 </div>
             )}
           </CardContent>

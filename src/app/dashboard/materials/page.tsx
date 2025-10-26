@@ -26,12 +26,12 @@ import { Skeleton } from '@/components/ui/skeleton';
 export default function MaterialsPage() {
   const firestore = useFirestore();
   const materialsQuery = useMemoFirebase(
-    () => query(collection(firestore, 'materials'), orderBy('name')),
+    () => (firestore ? query(collection(firestore, 'materials'), orderBy('name')) : null),
     [firestore]
   );
   const { data: materials, isLoading } = useCollection<Material>(materialsQuery);
 
-  const suppliersQuery = useMemoFirebase(() => collection(firestore, 'suppliers'), [firestore]);
+  const suppliersQuery = useMemoFirebase(() => (firestore ? collection(firestore, 'suppliers') : null), [firestore]);
   const { data: suppliers } = useCollection<any>(suppliersQuery);
 
   const suppliersMap = useMemo(() => {
@@ -63,7 +63,7 @@ export default function MaterialsPage() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  Array.from({ length: 5 }).map((_, i) => (
+                  Array.from({ length: 10 }).map((_, i) => (
                     <TableRow key={i}>
                       <TableCell><Skeleton className="h-5 w-32" /></TableCell>
                       <TableCell><Skeleton className="h-5 w-24" /></TableCell>
@@ -85,9 +85,9 @@ export default function MaterialsPage() {
                 )}
               </TableBody>
             </Table>
-            {!isLoading && materials?.length === 0 && (
+            {!isLoading && (!materials || materials.length === 0) && (
                 <div className="text-center py-12 text-muted-foreground">
-                    No materials found.
+                    No materials found. Try seeding the database in the Admin panel.
                 </div>
             )}
           </CardContent>

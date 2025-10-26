@@ -32,7 +32,7 @@ function getStatusVariant(status: Order['status']) {
     case 'In-Transit':
       return 'bg-blue-500';
     case 'Delayed':
-      return 'bg-yellow-500';
+      return 'bg-yellow-500 text-black';
     case 'Cancelled':
       return 'bg-red-500';
     case 'Processing':
@@ -45,7 +45,7 @@ function getStatusVariant(status: Order['status']) {
 export default function LogisticsPage() {
   const firestore = useFirestore();
   const ordersQuery = useMemoFirebase(
-    () => query(collection(firestore, 'orders'), orderBy('createdAt', 'desc')),
+    () => (firestore ? query(collection(firestore, 'orders'), orderBy('createdAt', 'desc')) : null),
     [firestore]
   );
   const { data: orders, isLoading } = useCollection<Order>(ordersQuery);
@@ -107,9 +107,9 @@ export default function LogisticsPage() {
                 )}
               </TableBody>
             </Table>
-            {!isLoading && orders?.length === 0 && (
+            {!isLoading && (!orders || orders.length === 0) && (
                 <div className="text-center py-12 text-muted-foreground">
-                    No orders found.
+                    No orders found. Try seeding the database in the Admin panel.
                 </div>
             )}
           </CardContent>

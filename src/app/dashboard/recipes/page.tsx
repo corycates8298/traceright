@@ -25,19 +25,19 @@ import { Factory, Package } from 'lucide-react';
 export default function RecipesPage() {
   const firestore = useFirestore();
   const recipesQuery = useMemoFirebase(
-    () => query(collection(firestore, 'recipes'), orderBy('name')),
+    () => (firestore ? query(collection(firestore, 'recipes'), orderBy('name')) : null),
     [firestore]
   );
   const { data: recipes, isLoading } = useCollection<Recipe>(recipesQuery);
 
   const materialsQuery = useMemoFirebase(
-    () => collection(firestore, 'materials'),
+    () => (firestore ? collection(firestore, 'materials') : null),
     [firestore]
   );
   const { data: materials } = useCollection<any>(materialsQuery);
 
   const productsQuery = useMemoFirebase(
-    () => collection(firestore, 'products'),
+    () => (firestore ? collection(firestore, 'products') : null),
     [firestore]
   );
   const { data: products } = useCollection<any>(productsQuery);
@@ -66,8 +66,8 @@ export default function RecipesPage() {
           <CardContent>
             {isLoading ? (
               <div className="space-y-4">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-14 w-full" />
                 ))}
               </div>
             ) : (
@@ -106,9 +106,9 @@ export default function RecipesPage() {
                 ))}
               </Accordion>
             )}
-             {!isLoading && recipes?.length === 0 && (
+             {!isLoading && (!recipes || recipes.length === 0) && (
                 <div className="text-center py-12 text-muted-foreground">
-                    No recipes found.
+                    No recipes found. Try seeding the database in the Admin panel.
                 </div>
             )}
           </CardContent>
