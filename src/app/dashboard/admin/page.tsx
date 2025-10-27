@@ -130,7 +130,7 @@ export default function AdminPage() {
 
   const isAdmin = userProfile?.role === 'Admin';
 
-  if (!isAdmin) {
+  if (!user || !isAdmin) {
     return (
       <div className="flex min-h-screen w-full flex-col">
         <Header title="Admin" />
