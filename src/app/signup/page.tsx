@@ -10,7 +10,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -23,7 +22,6 @@ import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import Image from 'next/image';
-import ReCAPTCHA from 'react-google-recaptcha';
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState('');
@@ -31,7 +29,6 @@ export default function SignupPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [recaptchaToken, setRecaptchaToken] = useState<string | null>(null);
   const router = useRouter();
   const auth = useAuth();
   const firestore = useFirestore();
@@ -39,14 +36,6 @@ export default function SignupPage() {
 
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!recaptchaToken) {
-      toast({
-        variant: 'destructive',
-        title: 'reCAPTCHA required',
-        description: 'Please complete the reCAPTCHA challenge.',
-      });
-      return;
-    }
     if (password.length < 6) {
       toast({
         variant: 'destructive',
@@ -158,16 +147,10 @@ export default function SignupPage() {
                 disabled={isLoading}
               />
             </div>
-            <div className="flex justify-center">
-              <ReCAPTCHA
-                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-                onChange={setRecaptchaToken}
-              />
-            </div>
             <Button
               type="submit"
               className="w-full"
-              disabled={isLoading || !recaptchaToken}
+              disabled={isLoading}
             >
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Create account
