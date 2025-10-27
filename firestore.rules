@@ -1,233 +1,192 @@
 /**
- * @fileoverview Firestore Security Rules for Supply Chain Management App
- *
- * Core Philosophy:
- * This ruleset prioritizes secure access to data based on user roles and ownership.
- * It aims to strike a balance between strict authorization and flexibility for rapid prototyping.
- *
- * Data Structure:
- * - Users: `/users/{userId}` - Stores user profiles, with `userId` matching the Firebase Auth UID.
- * - Suppliers: `/suppliers/{supplierId}` - Stores supplier information.
- * - Supplier Documents: `/suppliers/{supplierId}/documents/{documentId}` - Documents associated with a supplier.
- * - Materials: `/materials/{materialId}` - Stores material information.
- * - Material Forecasts: `/materials/{materialId}/forecasts/{forecastId}` - Forecasts for a specific material.
- * - Orders: `/orders/{orderId}` - Stores order information.
- * - UI Schemas: `/uiSchemas/{uiSchemaId}` - Stores UI schemas.
- * - Inventory: `/inventory/{inventoryId}` - Stores inventory information.
- * - Products: `/products/{productId}` - Stores product information.
- * - Recipes: `/recipes/{recipeId}` - Stores recipe information.
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a user-ownership model for user profiles and a resource-ownership model for other entities like suppliers, materials, orders, etc.
+ * All data is stored in top-level collections (e.g., /users/{userId}, /suppliers/{supplierId}).
  *
  * Key Security Decisions:
- * - User profiles are only accessible and modifiable by the owning user.
- * - Subcollections (e.g., `/suppliers/{supplierId}/documents/{documentId}`) inherit the parent's ownership.
- * - Listing of user documents is allowed only for the owning user.
- * - No global admin roles are defined in this prototype; all data access is owner-based.
- * - Data shape validation is minimized to allow for flexible data model changes during prototyping.
- *
- * Denormalization for Authorization:
- *  - None implemented in this version. Consider adding `supplierId` to `Document` to simplify rules.
+ * - Users can only read and write their own profile data.
+ * - Listing user profiles is disallowed to prevent information leakage.
+ * - Suppliers can manage their own documents in a subcollection.
+ * - Other entities (materials, orders, products, etc.) are globally accessible for reading but require authentication for modification.
+ * - Denormalization: To simplify security rules and improve performance, supplierId is present in both the supplier document and its subcollection of documents.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Manages user profile data. Only the user themselves can read or write their profile.
+     * @description Controls access to user profile data.
      * @path /users/{userId}
-     * @allow (create) - Authenticated user can create their profile if the userId matches their auth.uid.
-     * @allow (get, update, delete) - Authenticated user can read, update, or delete their profile if the userId matches their auth.uid.
-     * @deny (create, get, update, delete) - Any operation if the userId does not match the authenticated user's UID.
-     * @principle Enforces user-ownership: Only the authenticated user can manage their own profile.
+     * @allow (create) Authenticated user can create their own profile if the userId matches their auth UID.
+     * @allow (get, update, delete) Authenticated user can read, update, or delete their own profile if the userId matches their auth UID.
+     * @deny (create) An unauthenticated user cannot create a profile.
+     * @deny (get, update, delete) An authenticated user cannot access another user's profile.
+     * @deny (list) Listing all users is not allowed.
+     * @principle Enforces strict user-ownership for profile data.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if false; // Listing user documents is not permitted.
-      allow create: if isSignedIn() && isOwner(userId) && request.resource.data.id == request.auth.uid;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id; // Ensure immutability of user ID
-      allow delete: if isExistingOwner(userId);
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow get, update, delete: if isSignedIn() && request.auth.uid == userId;
+      allow list: if false;
     }
 
     /**
-     * @description Manages supplier information.
+     * @description Controls access to supplier data.
      * @path /suppliers/{supplierId}
-     * @allow (create) - Authenticated user can create a supplier.  Should ideally validate an owner ID.
-     * @allow (get, list) - Any user can read supplier information.
-     * @allow (update, delete) - Only the owner can update or delete. Should ideally validate an owner ID.
-     * @deny (create, update, delete) - If not authenticated or not the owner.
-     * @principle Public read, owner-only write access to supplier data.
+     * @allow (get, list) Any authenticated user can read supplier data.
+     * @allow (create) Any authenticated user can create a supplier, and the supplierId must match the document id
+     * @allow (update, delete) Only the supplier (identified by supplierId) can update or delete their own data.
+     * @deny (create) An unauthenticated user cannot create a supplier.
+     * @principle Allows public read access but restricts modification to the supplier.
      */
     match /suppliers/{supplierId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
       allow get, list: if true;
-      allow create: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow update: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow delete: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow create: if isSignedIn() && request.auth.uid == supplierId;
+      allow update, delete: if isSignedIn() && request.auth.uid == supplierId;
     }
 
     /**
-     * @description Manages documents associated with a supplier.
+     * @description Controls access to documents associated with a supplier.
      * @path /suppliers/{supplierId}/documents/{documentId}
-     * @allow (create) - Authenticated user can create a document under a supplier. Should ideally validate owner ID and supplier ID.
-     * @allow (get, list) - Any user can read documents for a supplier.
-     * @allow (update, delete) - Only the owner of the supplier can update or delete documents. Should ideally validate owner ID and supplier ID.
-     * @deny (create, update, delete) - If not authenticated, not the owner, or supplier ID mismatch.
-     * @principle Inherits ownership from the parent supplier.
+     * @allow (get, list) Any authenticated user can read documents of a supplier.
+     * @allow (create) Any authenticated user can create a document for a supplier.
+     * @allow (update, delete) Only the supplier can update or delete their documents.
+     * @deny (create) An unauthenticated user cannot create a document.
+     * @principle Allows public read access but restricts modification to the owning supplier.
      */
     match /suppliers/{supplierId}/documents/{documentId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
       allow get, list: if true;
-      allow create: if isSignedIn();  // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow update: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow delete: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn() && request.auth.uid == supplierId;
     }
 
     /**
-     * @description Manages material information.
+     * @description Controls access to material data.
      * @path /materials/{materialId}
-     * @allow (get, list) - Any user can read material information.
-     * @allow (create) - Authenticated user can create a material.  Should ideally validate an owner ID.
-     * @allow (update, delete) - Only the owner can update or delete. Should ideally validate an owner ID.
-     * @deny (create, update, delete) - If not authenticated or not the owner.
-     * @principle Public read, owner-only write access to material data.
+     * @allow (get, list) Any user can read material data.
+     * @allow (create) Any authenticated user can create material data
+     * @allow (update, delete) Only authenticated users can update or delete material data.
+     * @deny (create) Unauthenticated users cannot create material data
+     * @principle Allows public read access but restricts modification to authenticated users.
      */
     match /materials/{materialId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
       allow get, list: if true;
-      allow create: if isSignedIn();  // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow update: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow delete: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
     }
 
     /**
-     * @description Manages forecasts associated with a material.
+     * @description Controls access to forecasts associated with a material.
      * @path /materials/{materialId}/forecasts/{forecastId}
-     * @allow (get, list) - Any user can read forecasts for a material.
-     * @allow (create) - Authenticated user can create a forecast under a material.  Should ideally validate owner ID and material ID.
-     * @allow (update, delete) - Only the owner of the material can update or delete forecasts.  Should ideally validate owner ID and material ID.
-     * @deny (create, update, delete) - If not authenticated, not the owner, or material ID mismatch.
-     * @principle Inherits ownership from the parent material.
+     * @allow (get, list) Any user can read forecasts for a material.
+     * @allow (create) Any authenticated user can create a forecast.
+     * @allow (update, delete) Only authenticated users can update or delete forecasts.
+     * @principle Allows public read access but restricts modification to authenticated users.
      */
     match /materials/{materialId}/forecasts/{forecastId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
       allow get, list: if true;
-      allow create: if isSignedIn();  // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow update: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow delete: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
     }
 
     /**
-     * @description Manages order information.
+     * @description Controls access to order data.
      * @path /orders/{orderId}
-     * @allow (get, list) - Any user can read order information.
-     * @allow (create) - Authenticated user can create an order. Should ideally validate an owner ID.
-     * @allow (update, delete) - Only the owner can update or delete. Should ideally validate an owner ID.
-     * @deny (create, update, delete) - If not authenticated or not the owner.
-     * @principle Public read, owner-only write access to order data.
+     * @allow (get, list) Any user can read order data.
+     * @allow (create) Any authenticated user can create order data
+     * @allow (update, delete) Only authenticated users can update or delete order data.
+     *  @deny (create) Unauthenticated users cannot create order data
+     * @principle Allows public read access but restricts modification to authenticated users.
      */
     match /orders/{orderId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
       allow get, list: if true;
-      allow create: if isSignedIn();  // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow update: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow delete: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
     }
 
     /**
-     * @description Manages UI schemas.
+     * @description Controls access to UI schema data.
      * @path /uiSchemas/{uiSchemaId}
-     * @allow (get, list) - Any user can read UI schemas.
-     * @allow (create) - Authenticated user can create a UI schema.  Should ideally validate an owner ID.
-     * @allow (update, delete) - Only the owner can update or delete. Should ideally validate an owner ID.
-     * @deny (create, update, delete) - If not authenticated or not the owner.
-     * @principle Public read, owner-only write access to UI schema data.
+     * @allow (get, list) Any user can read UI schema data.
+     * @allow (create) Any authenticated user can create UI schema data
+     * @allow (update, delete) Only authenticated users can update or delete UI schema data.
+     * @deny (create) Unauthenticated users cannot create UI schema data
+     * @principle Allows public read access but restricts modification to authenticated users.
      */
     match /uiSchemas/{uiSchemaId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
       allow get, list: if true;
-      allow create: if isSignedIn();  // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow update: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow delete: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
     }
 
     /**
-     * @description Manages inventory information.
+     * @description Controls access to inventory data.
      * @path /inventory/{inventoryId}
-     * @allow (get, list) - Any user can read inventory information.
-     * @allow (create) - Authenticated user can create inventory.  Should ideally validate an owner ID.
-     * @allow (update, delete) - Only the owner can update or delete. Should ideally validate an owner ID.
-     * @deny (create, update, delete) - If not authenticated or not the owner.
-     * @principle Public read, owner-only write access to inventory data.
+     * @allow (get, list) Any user can read inventory data.
+     * @allow (create) Any authenticated user can create inventory data
+     * @allow (update, delete) Only authenticated users can update or delete inventory data.
+     * @deny (create) Unauthenticated users cannot create inventory data
+     * @principle Allows public read access but restricts modification to authenticated users.
      */
     match /inventory/{inventoryId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
       allow get, list: if true;
-      allow create: if isSignedIn();  // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow update: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow delete: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
     }
 
     /**
-     * @description Manages product information.
+     * @description Controls access to product data.
      * @path /products/{productId}
-     * @allow (get, list) - Any user can read product information.
-     * @allow (create) - Authenticated user can create a product.  Should ideally validate an owner ID.
-     * @allow (update, delete) - Only the owner can update or delete. Should ideally validate an owner ID.
-     * @deny (create, update, delete) - If not authenticated or not the owner.
-     * @principle Public read, owner-only write access to product data.
+     * @allow (get, list) Any user can read product data.
+     * @allow (create) Any authenticated user can create product data
+     * @allow (update, delete) Only authenticated users can update or delete product data.
+     * @deny (create) Unauthenticated users cannot create product data
+     * @principle Allows public read access but restricts modification to authenticated users.
      */
     match /products/{productId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
       allow get, list: if true;
-      allow create: if isSignedIn();  // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow update: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
-      allow delete: if isSignedIn(); // TODO: Add owner validation once the schema is updated with an ownership field.
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
     }
 
     /**
-     * @description Manages recipe information.
+     * @description Controls access to recipe data.
      * @path /recipes/{recipeId}
-     * @allow (get, list) - Any user can read recipe information.
-     * @allow (create) - Authenticated user can create a recipe.  Should ideally validate an owner ID.
-     * @allow (update, delete) - Only the owner can update or delete. Should ideally validate an owner ID.
-     * @deny (create, update, delete) - If not authenticated or not the owner.
-     * @principle Public read, owner-only write access to recipe data.
+     * @allow (get, list) Any user can read recipe data.
+     * @allow (create) Any authenticated user can create recipe data
+     * @allow (update, delete) Only authenticated users can update or delete recipe data.
+     * @deny (create) Unauthenticated users cannot create recipe data
+     * @principle Allows public read access but restricts modification to authenticated users.
      */
     match /recipes/{recipeId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
       allow get, list: if true;
-      allow create: if isSignedIn();  // CRITICAL: Cannot implement owner-only writes. The 'Recipe' entity is missing an 'ownerId' or 'authorId' field.
-      allow update: if isSignedIn(); // CRITICAL: Cannot implement owner-only writes. The 'Recipe' entity is missing an 'ownerId' or 'authorId' field.
-      allow delete: if isSignedIn(); // CRITICAL: Cannot implement owner-only writes. The 'Recipe' entity is missing an 'ownerId' or 'authorId' field.
+      allow create: if isSignedIn();
+      allow update, delete: if isSignedIn();
     }
+  }
+
+  // Helper function to determine if the user is signed in
+  function isSignedIn() {
+    return request.auth != null;
+  }
+
+  // Helper function to determine if the user is the owner of the resource
+  function isOwner(userId) {
+    return request.auth.uid == userId;
+  }
+
+    // Helper function to determine if the user is the owner of the supplier resource
+  function isSupplierOwner(supplierId) {
+    return isSignedIn() && request.auth.uid == supplierId;
+  }
+
+  // Helper function to determine if the user is the owner of the resource and it exists
+  function isExistingOwner(documentId) {
+    return isSignedIn() && request.auth.uid == documentId && resource != null;
+  }
+
+  // Helper function to determine if the user is the owner of the supplier document
+  function isSupplierDocumentOwner(supplierId, documentId) {
+      return isSignedIn() && resource.data.supplierId == supplierId;
   }
 }
