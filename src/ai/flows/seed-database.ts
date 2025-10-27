@@ -7,7 +7,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'genkit';
+import { z } from 'zod';
 import { getFirestore, collection, writeBatch, serverTimestamp, doc, GeoPoint } from 'firebase/firestore';
 import { faker } from '@faker-js/faker';
 import { initializeFirebase } from '@/firebase';

@@ -10,7 +10,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const ProactiveDelayAgentInputSchema = z.object({
   orderId: z.string().describe('The ID of the order to monitor.'),

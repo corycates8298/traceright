@@ -9,7 +9,7 @@
  */
 
 import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {z} from 'zod';
 
 const AIPoweredChatbotInputSchema = z.object({
   question: z.string().describe('The user question about supply chain data.'),
