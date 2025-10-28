@@ -1,7 +1,7 @@
 // src/components/charts/AdvancedChartLibrary.tsx
 'use client';
 
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/context/ThemeContext';
 import { Card } from '@/components/ui/card';
 import {
   BarChart,
