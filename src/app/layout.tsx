@@ -11,9 +11,7 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
 export const metadata: Metadata = {
   title: 'TraceRight.ai | Supply Chain Command',
   description: 'An intelligent supply chain management platform.',
-  icons: {
-    icon: [],
-  },
+  icons: [],
 };
 
 export default function RootLayout({
