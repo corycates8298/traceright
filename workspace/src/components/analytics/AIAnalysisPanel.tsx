@@ -19,9 +19,9 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme } from '@/context/ThemeContext';
 import { collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
+import { db } from '@/firebase';
 
 interface AIAnalysisPanelProps {
   isOpen: boolean;
