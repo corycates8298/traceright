@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ThemeProvider } from '@/context/ThemeContext';
 import { AIAnalysisPanel } from '@/components/analytics/AIAnalysisPanel';
 import { PivotTableBuilder } from '@/components/analytics/PivotTableBuilder';
 import { DataCleaningTools } from '@/components/analytics/DataCleaningTools';

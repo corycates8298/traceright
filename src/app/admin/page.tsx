@@ -2,7 +2,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ThemeProvider } from '@/contexts/ThemeContext';
+import { ThemeProvider } from '@/context/ThemeContext';
 import { AdminPanel } from '@/components/admin/AdminPanel';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Shield, Database, Trash2, Users } from 'lucide-react';
