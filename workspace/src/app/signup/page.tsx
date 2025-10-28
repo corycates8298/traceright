@@ -58,8 +58,8 @@ export default function SignupPage() {
         displayName: displayName,
       });
 
-      // All new users will be Readers by default
-      const userRole = 'Reader';
+      // Check if the new user is the designated admin
+      const userRole = user.uid === 'hWg5L0Cin3duMKe04jYbrY7Lyik1' ? 'Admin' : 'Reader';
 
       // Create a user profile document in Firestore
       const userRef = doc(firestore, 'users', user.uid);
@@ -74,7 +74,7 @@ export default function SignupPage() {
 
       toast({
         title: 'Account Created',
-        description: 'Welcome to TraceRight.ai!',
+        description: userRole === 'Admin' ? 'Welcome, Admin!' : 'Welcome to TraceRight.ai!',
       });
       router.push('/dashboard');
     } catch (error: any) {
