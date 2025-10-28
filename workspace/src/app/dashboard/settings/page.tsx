@@ -13,17 +13,16 @@ import { Button } from '@/components/ui/button';
 import { useAuth, useFirestore } from '@/firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Shield, User, Mail, Key, Sparkles, Eye, EyeOff } from 'lucide-react';
+import { Loader2, Shield, User, Mail, Key, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { useFeatures } from '@/context/features-context';
 
 export default function SettingsPage() {
   const { user } = useAuth();
   const firestore = useFirestore();
   const { toast } = useToast();
-  const { showcaseEnabled, setShowcaseEnabled } = useFeatures();
+  
   const [isAdmin, setIsAdmin] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
@@ -249,71 +248,6 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         )}
-
-        {/* Demo Features Control */}
-        <Card className="border-violet-500/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-violet-600" />
-              Demo Features
-            </CardTitle>
-            <CardDescription>
-              Control visibility of showcase features for demonstrations
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg bg-violet-50 dark:bg-violet-950/20 p-4 text-sm text-violet-800 dark:text-violet-200">
-              <p className="font-medium mb-2">SHOWCASE Section Control</p>
-              <p>
-                Toggle the SHOWCASE section in the sidebar to reveal or hide Next-Gen Features
-                and Google Sheets Demo during presentations. Perfect for controlling your demo flow.
-              </p>
-            </div>
-
-            <div className="flex items-center justify-between p-4 rounded-lg border bg-background">
-              <div className="flex items-center gap-3">
-                {showcaseEnabled ? (
-                  <Eye className="h-5 w-5 text-green-600" />
-                ) : (
-                  <EyeOff className="h-5 w-5 text-slate-400" />
-                )}
-                <div>
-                  <Label htmlFor="showcase-toggle" className="text-base font-semibold cursor-pointer">
-                    Show SHOWCASE Features
-                  </Label>
-                  <p className="text-sm text-muted-foreground">
-                    {showcaseEnabled
-                      ? 'SHOWCASE section is visible in sidebar'
-                      : 'SHOWCASE section is hidden'}
-                  </p>
-                </div>
-              </div>
-              <Switch
-                id="showcase-toggle"
-                checked={showcaseEnabled}
-                onCheckedChange={(checked) => {
-                  setShowcaseEnabled(checked);
-                  toast({
-                    title: checked ? 'SHOWCASE Enabled' : 'SHOWCASE Hidden',
-                    description: checked
-                      ? 'Next-Gen Features are now visible in the sidebar'
-                      : 'SHOWCASE section has been hidden from the sidebar',
-                  });
-                }}
-              />
-            </div>
-
-            {showcaseEnabled && (
-              <div className="rounded-lg bg-green-50 dark:bg-green-950/20 p-4 text-sm text-green-800 dark:text-green-200 border border-green-500/20">
-                <p className="font-medium mb-2">SHOWCASE Features Active</p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>✨ Next-Gen Features - Innovation showcase</li>
-                  <li>📊 Google Sheets Demo - Live integration demo</li>
-                </ul>
-              </div>
-            )}
-          </CardContent>
-        </Card>
 
         {/* Theme Settings Placeholder */}
         <Card>
