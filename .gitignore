@@ -2,6 +2,7 @@
 
 # dependencies
 /node_modules
+/functions/node_modules
 /.pnp
 .pnp.js
 
@@ -11,6 +12,7 @@
 # next.js
 /.next/
 /out/
+workspace/.next/
 
 # production
 /build
@@ -37,3 +39,4 @@ pnpm-debug.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+workspace/node_modules
