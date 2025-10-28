@@ -66,7 +66,9 @@ const aiVisualInspectionFlow = ai.defineFlow(
     outputSchema: AIVisualInspectionOutputSchema,
   },
   async input => {
-    const {output} = await aiVisualInspectionPrompt(input);
+    const {output} = await aiVisualInspectionPrompt(input, {
+        model: 'googleai/gemini-pro-vision',
+    });
     return output!;
   }
 );

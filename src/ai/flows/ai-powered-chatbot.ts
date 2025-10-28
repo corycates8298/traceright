@@ -39,7 +39,9 @@ const aiPoweredChatbotFlow = ai.defineFlow(
     outputSchema: AIPoweredChatbotOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const {output} = await prompt(input, {
+        model: 'googleai/gemini-pro',
+    });
     return output!;
   }
 );

@@ -59,7 +59,9 @@ const proactiveDelayAgentFlow = ai.defineFlow(
     outputSchema: ProactiveDelayAgentOutputSchema,
   },
   async input => {
-    const {output} = await proactiveDelayAgentPrompt(input);
+    const {output} = await proactiveDelayAgentPrompt(input, {
+        model: 'googleai/gemini-pro',
+    });
     return output!;
   }
 );

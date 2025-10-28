@@ -88,7 +88,9 @@ const mlIntelligenceDashboardFlow = ai.defineFlow(
     outputSchema: MlIntelligenceDashboardOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
+    const {output} = await prompt(input, {
+        model: 'googleai/gemini-pro',
+    });
     return output!;
   }
 );

@@ -80,7 +80,9 @@ const askAboutDocumentsFlow = ai.defineFlow(
     const documentContent = await findRelevantDocuments(query);
 
     // 2. Pass the retrieved content and the original query to the LLM
-    const {output} = await prompt({ query, documentContent });
+    const {output} = await prompt({ query, documentContent }, {
+        model: 'googleai/gemini-pro'
+    });
     return output!;
   }
 );
