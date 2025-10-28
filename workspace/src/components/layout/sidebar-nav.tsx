@@ -20,6 +20,8 @@ import {
   BrainCircuit,
   Map,
   ClipboardList,
+  Box,
+  Terminal,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -74,6 +76,8 @@ const navGroups: NavGroup[] = [
     label: 'Intelligence',
     links: [
       { href: '/dashboard/digital-twin', label: 'Digital Twin', icon: Map },
+      { href: '/dashboard/dashboard-3d', label: 'Dashboard 3D', icon: Box },
+      { href: '/dashboard/cyberpunk', label: 'Cyberpunk View', icon: Terminal },
       {
         href: '/dashboard/demand-forecasting',
         label: 'Demand Forecasting',
