@@ -10,7 +10,7 @@ import { SidebarNav } from '@/components/layout/sidebar-nav';
 import { Chatbot } from '@/components/chatbot';
 import Link from 'next/link';
 import { ThemeCustomizer } from '@/components/theme/ThemeCustomizer';
-import { FeaturesProvider } from '@/context/features-context';
+import { FeatureFlagsProvider } from '@/components/FeatureFlagsContext';
 
 
 export default function DashboardLayout({
@@ -36,7 +36,7 @@ export default function DashboardLayout({
   }
 
   return (
-    <FeaturesProvider>
+    <FeatureFlagsProvider>
       <SidebarProvider>
         <Sidebar collapsible="icon" variant="sidebar" className="border-sidebar-border">
           <SidebarHeader className="p-4">
@@ -60,6 +60,6 @@ export default function DashboardLayout({
           <ThemeCustomizer />
         </SidebarInset>
       </SidebarProvider>
-    </FeaturesProvider>
+    </FeatureFlagsProvider>
   );
 }

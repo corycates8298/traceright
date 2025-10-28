@@ -43,7 +43,7 @@ import { Button } from '../ui/button';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
-import { useFeatures } from '@/context/features-context';
+import { useFeatureFlags } from '@/components/FeatureFlagsContext';
 
 type NavLink = {
   href: string;
@@ -112,6 +112,12 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
+    label: 'CONFIGURATION',
+    links: [
+      { href: '/dashboard/feature-flags', label: '🎛️ Feature Flags', icon: Settings },
+    ],
+  },
+  {
     label: 'System',
     links: [
       { href: '/dashboard/admin', label: 'Admin', icon: Shield },
@@ -129,7 +135,7 @@ const navGroups: NavGroup[] = [
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const { showcaseEnabled } = useFeatures();
+  const { isEnabled } = useFeatureFlags();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(
     navGroups.reduce((acc, group) => ({ ...acc, [group.label]: true }), {})
   );
@@ -138,7 +144,8 @@ export function SidebarNav() {
     setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
   };
 
-  // Filter out SHOWCASE group if not enabled
+  // Filter out SHOWCASE group if neither showcase feature is enabled
+  const showcaseEnabled = isEnabled('showcaseVisualization') || isEnabled('showcaseSheets');
   const visibleGroups = showcaseEnabled
     ? navGroups
     : navGroups.filter(group => group.label !== 'SHOWCASE');
