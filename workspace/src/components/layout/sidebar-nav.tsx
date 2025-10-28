@@ -22,6 +22,8 @@ import {
   ClipboardList,
   Box,
   Terminal,
+  Sparkles,
+  Sheet,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -41,6 +43,7 @@ import { Button } from '../ui/button';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
+import { useFeatures } from '@/context/features-context';
 
 type NavLink = {
   href: string;
@@ -77,7 +80,7 @@ const navGroups: NavGroup[] = [
     links: [
       { href: '/dashboard/digital-twin', label: 'Digital Twin', icon: Map },
       { href: '/dashboard/dashboard-3d', label: 'Dashboard 3D', icon: Box },
-      { href: '/dashboard/cyberpunk', label: 'Cyberpunk View', icon: Terminal },
+      { href: '/dashboard/black-reports', label: 'Black Reports', icon: Terminal },
       {
         href: '/dashboard/demand-forecasting',
         label: 'Demand Forecasting',
@@ -115,10 +118,18 @@ const navGroups: NavGroup[] = [
       { href: '/dashboard/settings', label: 'Settings', icon: Settings },
     ],
   },
+  {
+    label: 'SHOWCASE',
+    links: [
+      { href: '/dashboard/next-gen-features', label: '✨ Next-Gen Features', icon: Sparkles },
+      { href: '/dashboard/google-sheets-demo', label: '📊 Google Sheets Demo', icon: Sheet },
+    ],
+  },
 ];
 
 export function SidebarNav() {
   const pathname = usePathname();
+  const { showcaseEnabled } = useFeatures();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(
     navGroups.reduce((acc, group) => ({ ...acc, [group.label]: true }), {})
   );
@@ -126,6 +137,11 @@ export function SidebarNav() {
   const toggleGroup = (label: string) => {
     setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
   };
+
+  // Filter out SHOWCASE group if not enabled
+  const visibleGroups = showcaseEnabled
+    ? navGroups
+    : navGroups.filter(group => group.label !== 'SHOWCASE');
 
   return (
     <SidebarMenu>
@@ -140,7 +156,7 @@ export function SidebarNav() {
         </Link>
       </SidebarMenuItem>
 
-      {navGroups.map((group) => (
+      {visibleGroups.map((group) => (
         <SidebarGroup key={group.label}>
           <Collapsible open={openGroups[group.label]} onOpenChange={() => toggleGroup(group.label)}>
             <CollapsibleTrigger asChild>

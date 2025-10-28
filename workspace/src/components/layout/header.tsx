@@ -1,6 +1,7 @@
 
 import { SidebarTrigger } from '@/components/ui/sidebar';
 import { UserNav } from '@/components/layout/user-nav';
+import { DarkModeToggle } from '@/components/theme/DarkModeToggle';
 
 type HeaderProps = {
   title: string;
@@ -15,7 +16,8 @@ export function Header({ title }: HeaderProps) {
       <div className="flex-1">
         <h1 className="text-lg font-semibold md:text-2xl">{title}</h1>
       </div>
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-2">
+        <DarkModeToggle />
         <UserNav />
       </div>
     </header>
