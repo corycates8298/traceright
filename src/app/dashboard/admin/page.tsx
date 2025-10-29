@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { Header } from '@/components/layout/header';
 import {
@@ -29,6 +29,8 @@ import {
 } from '@/components/ui/alert-dialog';
 import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/types';
+import { FileUpload } from '@/components/storage/FileUpload';
+import { FileManager } from '@/components/storage/FileManager';
 
 function HealthStatus({ title, status, Icon }: { title: string, status: 'Operational' | 'Error' | 'Checking...', Icon: React.ElementType }) {
   const statusColor = status === 'Operational' ? 'text-green-500' : status === 'Error' ? 'text-red-500' : 'text-yellow-500';
@@ -53,6 +55,7 @@ export default function AdminPage() {
   const { toast } = useToast();
   const [isSeeding, setIsSeeding] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [fileManagerKey, setFileManagerKey] = useState(Date.now());
 
   const userProfileRef = useMemoFirebase(
     () => (user ? doc(firestore, 'users', user.uid) : null),
@@ -60,6 +63,10 @@ export default function AdminPage() {
   );
   const { data: userProfile, isLoading: isProfileLoading } =
     useDoc<UserProfile>(userProfileRef);
+    
+  const onUploadComplete = useCallback(() => {
+    setFileManagerKey(Date.now()); // Re-mount FileManager to fetch new files
+  }, []);
 
   const handleSeed = async () => {
     setIsSeeding(true);
@@ -156,7 +163,7 @@ export default function AdminPage() {
       <Header title="Admin Panel" />
       <main className="flex-1 p-4 sm:p-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="lg:col-span-2">
+          <Card className="lg:col-span-1">
             <CardHeader>
               <CardTitle>Database Management</CardTitle>
               <CardDescription>
@@ -177,7 +184,7 @@ export default function AdminPage() {
                   ) : (
                     <Database className="mr-2 h-4 w-4" />
                   )}
-                  Seed Data
+                  Seed
                 </Button>
               </div>
 
@@ -187,7 +194,7 @@ export default function AdminPage() {
                     Clear Database
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Permanently delete all data from the collections.
+                    Permanently delete all data.
                   </p>
                 </div>
                 <AlertDialog>
@@ -201,7 +208,7 @@ export default function AdminPage() {
                       ) : (
                         <Trash2 className="mr-2 h-4 w-4" />
                       )}
-                      Clear Data
+                      Clear
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -233,25 +240,23 @@ export default function AdminPage() {
                 <HealthStatus title="AI Services" status="Operational" Icon={Bot} />
             </CardContent>
           </Card>
-          <Card className="lg:col-span-3">
-            <CardHeader>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>
-                Manage users, roles, and system settings.
-              </CardDescription>
+           <Card>
+             <CardHeader>
+                <CardTitle>File Storage</CardTitle>
+                <CardDescription>Upload and manage documents.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-center h-[20vh] border-2 border-dashed rounded-lg">
-                <div className="text-center">
-                  <h3 className="text-xl font-bold tracking-tight">
-                    Coming Soon
-                  </h3>
-                  <p className="text-muted-foreground">
-                    User and role management features will be available here.
-                  </p>
-                </div>
-              </div>
+                <FileUpload onUploadComplete={onUploadComplete} />
             </CardContent>
+           </Card>
+          <Card className="lg:col-span-3">
+            <CardHeader>
+                <CardTitle>File Manager</CardTitle>
+                <CardDescription>View and manage all uploaded files.</CardDescription>
+            </CardHeader>
+             <CardContent>
+                <FileManager key={fileManagerKey} />
+             </CardContent>
           </Card>
         </div>
       </main>
