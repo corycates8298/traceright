@@ -50,6 +50,7 @@ type NavLink = {
   label: string;
   icon: LucideIcon;
   disabled?: boolean;
+  featureFlag?: any;
 };
 
 type NavGroup = {
@@ -61,74 +62,58 @@ const navGroups: NavGroup[] = [
   {
     label: 'Core Logistics',
     links: [
-      { href: '/dashboard/logistics', label: 'Logistics', icon: Truck },
-      { href: '/dashboard/inventory', label: 'Inventory', icon: Warehouse },
-      { href: '/dashboard/orders', label: 'Orders', icon: Package },
+      { href: '/dashboard/logistics', label: 'Logistics', icon: Truck, featureFlag: 'logistics' },
+      { href: '/dashboard/inventory', label: 'Inventory', icon: Warehouse, featureFlag: 'warehouseOps' },
+      { href: '/dashboard/orders', label: 'Orders', icon: Package, featureFlag: 'purchaseOrders' },
     ],
   },
   {
     label: 'Production',
     links: [
-      { href: '/dashboard/materials', label: 'Materials', icon: Book },
-      { href: '/dashboard/recipes', label: 'Recipes', icon: Factory },
-      { href: '/dashboard/products', label: 'Products', icon: Package },
-      { href: '/dashboard/batches', label: 'Batches', icon: ClipboardList },
+      { href: '/dashboard/materials', label: 'Materials', icon: Book, featureFlag: 'rawMaterials' },
+      { href: '/dashboard/recipes', label: 'Recipes', icon: Factory, featureFlag: 'recipes' },
+      { href: '/dashboard/products', label: 'Products', icon: Package, featureFlag: 'rawMaterials' },
+      { href: '/dashboard/batches', label: 'Batches', icon: ClipboardList, featureFlag: 'batches' },
     ],
   },
   {
     label: 'Intelligence',
     links: [
-      { href: '/dashboard/digital-twin', label: 'Digital Twin', icon: Map },
-      { href: '/dashboard/dashboard-3d', label: 'Dashboard 3D', icon: Box },
-      { href: '/dashboard/black-reports', label: 'Black Reports', icon: Terminal },
-      {
-        href: '/dashboard/demand-forecasting',
-        label: 'Demand Forecasting',
-        icon: TrendingUp,
-      },
-      {
-        href: '/dashboard/visual-inspection',
-        label: 'AI Visual Inspection',
-        icon: ScanSearch,
-      },
-      { href: '/dashboard/reporting', label: 'AI Reporting Hub', icon: FileText },
-      {
-        href: '/dashboard/proactive-agent',
-        label: 'Proactive Agent',
-        icon: Bot,
-      },
-      {
-        href: '/dashboard/ml-intelligence',
-        label: 'ML Intelligence',
-        icon: BrainCircuit,
-      },
+      { href: '/dashboard/digital-twin', label: 'Digital Twin', icon: Map, featureFlag: 'traceability' },
+      { href: '/dashboard/dashboard-3d', label: 'Dashboard 3D', icon: Box, featureFlag: 'dashboard3D' },
+      { href: '/dashboard/black-reports', label: 'Black Reports', icon: Terminal, featureFlag: 'dashboardCyberpunk' },
+      { href: '/dashboard/demand-forecasting', label: 'Demand Forecasting', icon: TrendingUp, featureFlag: 'aiForecast' },
+      { href: '/dashboard/visual-inspection', label: 'AI Visual Inspection', icon: ScanSearch, featureFlag: 'aiVision' },
+      { href: '/dashboard/reporting', label: 'AI Reporting Hub', icon: FileText, featureFlag: 'aiReporting' },
+      { href: '/dashboard/proactive-agent', label: 'Proactive Agent', icon: Bot, featureFlag: 'traceability' },
+      { href: '/dashboard/ml-intelligence', label: 'ML Intelligence', icon: BrainCircuit, featureFlag: 'mlIntelligence' },
     ],
   },
   {
     label: 'Partners',
     links: [
-      { href: '/dashboard/suppliers', label: 'Suppliers', icon: Users },
-      { href: '/dashboard/financials', label: 'Financials', icon: DollarSign },
+      { href: '/dashboard/suppliers', label: 'Suppliers', icon: Users, featureFlag: 'suppliers' },
+      { href: '/dashboard/financials', label: 'Financials', icon: DollarSign, featureFlag: 'logistics' },
     ],
   },
   {
     label: 'CONFIGURATION',
     links: [
-      { href: '/dashboard/feature-flags', label: '🎛️ Feature Flags', icon: Settings },
+      { href: '/dashboard/feature-flags', label: '🎛️ Feature Flags', icon: Settings, featureFlag: 'administration' },
     ],
   },
   {
     label: 'System',
     links: [
-      { href: '/dashboard/admin', label: 'Admin', icon: Shield },
-      { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+      { href: '/dashboard/admin', label: 'Admin', icon: Shield, featureFlag: 'administration' },
+      { href: '/dashboard/settings', label: 'Settings', icon: Settings, featureFlag: 'administration' },
     ],
   },
   {
     label: 'SHOWCASE',
     links: [
-      { href: '/dashboard/next-gen-features', label: '✨ Next-Gen Features', icon: Sparkles },
-      { href: '/dashboard/google-sheets-demo', label: '📊 Google Sheets Demo', icon: Sheet },
+      { href: '/dashboard/next-gen-features', label: '✨ Next-Gen Features', icon: Sparkles, featureFlag: 'showcaseVisualization' },
+      { href: '/dashboard/google-sheets-demo', label: '📊 Google Sheets Demo', icon: Sheet, featureFlag: 'showcaseSheets' },
     ],
   },
 ];
@@ -144,12 +129,6 @@ export function SidebarNav() {
     setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
   };
 
-  // Filter out SHOWCASE group if neither showcase feature is enabled
-  const showcaseEnabled = isEnabled('showcaseVisualization') || isEnabled('showcaseSheets');
-  const visibleGroups = showcaseEnabled
-    ? navGroups
-    : navGroups.filter(group => group.label !== 'SHOWCASE');
-
   return (
     <SidebarMenu>
       <SidebarMenuItem>
@@ -163,46 +142,53 @@ export function SidebarNav() {
         </Link>
       </SidebarMenuItem>
 
-      {visibleGroups.map((group) => (
-        <SidebarGroup key={group.label}>
-          <Collapsible open={openGroups[group.label]} onOpenChange={() => toggleGroup(group.label)}>
-            <CollapsibleTrigger asChild>
-              <div className='flex items-center justify-between w-full'>
-                <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
-                 <Button variant="ghost" size="icon" className="h-6 w-6 group-data-[collapsible=icon]:hidden">
-                    <ChevronRight className={cn('h-4 w-4 transition-transform', openGroups[group.label] && 'rotate-90')} />
-                  </Button>
-              </div>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <SidebarMenu className="pl-4 pt-1">
-                {group.links.map((link) => {
-                  const isActive = pathname.startsWith(link.href);
-                  return (
-                    <SidebarMenuItem key={link.href}>
-                      <Link href={link.disabled ? '#' : link.href} passHref>
-                        <SidebarMenuButton
-                          asChild
-                          isActive={isActive}
-                          tooltip={{ children: link.label }}
-                          variant="ghost"
-                          className='justify-start'
-                          disabled={link.disabled}
-                        >
-                          <span>
-                            <link.icon />
-                            <span>{link.label}</span>
-                          </span>
-                        </SidebarMenuButton>
-                      </Link>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </CollapsibleContent>
-          </Collapsible>
-        </SidebarGroup>
-      ))}
+      {navGroups.map((group) => {
+        const visibleLinks = group.links.filter(link => !link.featureFlag || isEnabled(link.featureFlag));
+        if (visibleLinks.length === 0) {
+          return null;
+        }
+
+        return (
+          <SidebarGroup key={group.label}>
+            <Collapsible open={openGroups[group.label]} onOpenChange={() => toggleGroup(group.label)}>
+              <CollapsibleTrigger asChild>
+                <div className='flex items-center justify-between w-full'>
+                  <SidebarGroupLabel>{group.label}</SidebarGroupLabel>
+                   <Button variant="ghost" size="icon" className="h-6 w-6 group-data-[collapsible=icon]:hidden">
+                      <ChevronRight className={cn('h-4 w-4 transition-transform', openGroups[group.label] && 'rotate-90')} />
+                    </Button>
+                </div>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarMenu className="pl-4 pt-1">
+                  {visibleLinks.map((link) => {
+                    const isActive = pathname.startsWith(link.href);
+                    return (
+                      <SidebarMenuItem key={link.href}>
+                        <Link href={link.disabled ? '#' : link.href} passHref>
+                          <SidebarMenuButton
+                            asChild
+                            isActive={isActive}
+                            tooltip={{ children: link.label }}
+                            variant="ghost"
+                            className='justify-start'
+                            disabled={link.disabled}
+                          >
+                            <span>
+                              <link.icon />
+                              <span>{link.label}</span>
+                            </span>
+                          </SidebarMenuButton>
+                        </Link>
+                      </SidebarMenuItem>
+                    );
+                  })}
+                </SidebarMenu>
+              </CollapsibleContent>
+            </Collapsible>
+          </SidebarGroup>
+        )
+      })}
     </SidebarMenu>
   );
 }
