@@ -104,12 +104,6 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: 'CONFIGURATION',
-    links: [
-      { href: '/dashboard/feature-flags', label: '🎛️ Feature Flags', icon: Settings },
-    ],
-  },
-  {
     label: 'System',
     links: [
       { href: '/dashboard/admin', label: 'Admin', icon: Shield, iconColor: 'text-red-500', featureFlag: 'administration' },
@@ -121,13 +115,6 @@ const navGroups: NavGroup[] = [
     links: [
       { href: '/dashboard/next-gen-features', label: '✨ Next-Gen Features', icon: Sparkles, iconColor: 'text-yellow-500', featureFlag: 'showcaseVisualization' },
       { href: '/dashboard/google-sheets-demo', label: '📊 Google Sheets Demo', icon: Sheet, iconColor: 'text-green-500', featureFlag: 'showcaseSheets' },
-    ],
-  },
-  {
-    label: 'SHOWCASE',
-    links: [
-      { href: '/dashboard/next-gen-features', label: '✨ Next-Gen Features', icon: Sparkles },
-      { href: '/dashboard/google-sheets-demo', label: '📊 Google Sheets Demo', icon: Sheet },
     ],
   },
 ];
