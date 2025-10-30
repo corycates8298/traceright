@@ -31,7 +31,15 @@ const SeedDatabaseOutputSchema = z.object({
 export type SeedDatabaseOutput = z.infer<typeof SeedDatabaseOutputSchema>;
 
 export async function seedDatabase(): Promise<SeedDatabaseOutput> {
-  return seedDatabaseFlow();
+  try {
+    console.log('[seed-database] Starting database seeding...');
+    const result = await seedDatabaseFlow();
+    console.log('[seed-database] Seeding completed successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('[seed-database] Error during seeding:', error);
+    throw error;
+  }
 }
 
 const seedDatabaseFlow = ai.defineFlow(
@@ -40,8 +48,11 @@ const seedDatabaseFlow = ai.defineFlow(
     outputSchema: SeedDatabaseOutputSchema,
   },
   async () => {
-    const { firestore } = initializeFirebase();
-    const batch = writeBatch(firestore);
+    try {
+      console.log('[seedDatabaseFlow] Initializing Firebase...');
+      const { firestore } = initializeFirebase();
+      const batch = writeBatch(firestore);
+      console.log('[seedDatabaseFlow] Firebase initialized, starting data generation...');
 
     // Constants for seeding
     const NUM_SUPPLIERS = 10;
@@ -321,7 +332,9 @@ const seedDatabaseFlow = ai.defineFlow(
         batch.set(costRef, cost);
     }
 
+    console.log('[seedDatabaseFlow] Committing batch...');
     await batch.commit();
+    console.log('[seedDatabaseFlow] Batch committed successfully!');
 
     return {
       message: 'Database successfully seeded with complete schema.',
@@ -339,5 +352,9 @@ const seedDatabaseFlow = ai.defineFlow(
         costs: NUM_COSTS,
       },
     };
+    } catch (error) {
+      console.error('[seedDatabaseFlow] Error in flow:', error);
+      throw error;
+    }
   }
 );
