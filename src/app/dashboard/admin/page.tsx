@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
 import { Header } from '@/components/layout/header';
 import {
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Database, Trash2, ShieldCheck, Wifi, Bot } from 'lucide-react';
+import { Loader2, Database, Trash2, ShieldCheck, Wifi, Bot, UserPlus, Shield } from 'lucide-react';
 import { seedDatabase } from '@/ai/flows/seed-database';
 import { clearDatabase } from '@/ai/flows/clear-database';
 import {
@@ -31,6 +31,9 @@ import { doc } from 'firebase/firestore';
 import type { UserProfile } from '@/types';
 import { FileUpload } from '@/components/storage/FileUpload';
 import { FileManager } from '@/components/storage/FileManager';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 function HealthStatus({ title, status, Icon }: { title: string, status: 'Operational' | 'Error' | 'Checking...', Icon: React.ElementType }) {
   const statusColor = status === 'Operational' ? 'text-green-500' : status === 'Error' ? 'text-red-500' : 'text-yellow-500';
@@ -50,23 +53,48 @@ function HealthStatus({ title, status, Icon }: { title: string, status: 'Operati
 
 
 export default function AdminPage() {
-  const { user, isUserLoading } = useUser();
+  const { user, isAdmin, isUserLoading } = useUser();
   const firestore = useFirestore();
   const { toast } = useToast();
   const [isSeeding, setIsSeeding] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
   const [fileManagerKey, setFileManagerKey] = useState(Date.now());
+  const [emailToMakeAdmin, setEmailToMakeAdmin] = useState('');
+  const [isSettingRole, setIsSettingRole] = useState(false);
 
-  const userProfileRef = useMemoFirebase(
-    () => (user ? doc(firestore, 'users', user.uid) : null),
-    [user, firestore]
-  );
-  const { data: userProfile, isLoading: isProfileLoading } =
-    useDoc<UserProfile>(userProfileRef);
-    
-  const onUploadComplete = useCallback(() => {
+  const onUploadComplete = () => {
     setFileManagerKey(Date.now()); // Re-mount FileManager to fetch new files
-  }, []);
+  };
+
+  const handleSetUserRole = async (role: 'admin' | 'user') => {
+    if (!emailToMakeAdmin) {
+      toast({
+        variant: 'destructive',
+        title: 'Email is required',
+      });
+      return;
+    }
+    setIsSettingRole(true);
+    try {
+      const functions = getFunctions();
+      const setUserRole = httpsCallable(functions, 'setUserRole');
+      const result = await setUserRole({ email: emailToMakeAdmin, role });
+      toast({
+        title: 'Success',
+        description: (result.data as any).message,
+      });
+      setEmailToMakeAdmin('');
+    } catch (error: any) {
+      console.error('Error setting user role:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Failed to set user role',
+        description: error.message,
+      });
+    } finally {
+      setIsSettingRole(false);
+    }
+  };
 
   const handleSeed = async () => {
     setIsSeeding(true);
@@ -116,8 +144,7 @@ export default function AdminPage() {
     }
   };
 
-  const isLoading = isUserLoading || isProfileLoading;
-  if (isLoading) {
+  if (isUserLoading) {
     return (
       <div className="flex min-h-screen w-full flex-col">
         <Header title="Admin" />
@@ -135,8 +162,6 @@ export default function AdminPage() {
     );
   }
 
-  const isAdmin = userProfile?.role === 'Admin';
-
   if (!user || !isAdmin) {
     return (
       <div className="flex min-h-screen w-full flex-col">
@@ -150,7 +175,7 @@ export default function AdminPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p>Please contact your system administrator.</p>
+              <p>Please contact an administrator to grant you access.</p>
             </CardContent>
           </Card>
         </main>
@@ -163,7 +188,7 @@ export default function AdminPage() {
       <Header title="Admin Panel" />
       <main className="flex-1 p-4 sm:p-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="lg:col-span-1">
+          <Card>
             <CardHeader>
               <CardTitle>Database Management</CardTitle>
               <CardDescription>
@@ -241,6 +266,28 @@ export default function AdminPage() {
             </CardContent>
           </Card>
            <Card>
+            <CardHeader>
+              <CardTitle>User Role Management</CardTitle>
+              <CardDescription>Grant or revoke admin privileges.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div>
+                    <Label htmlFor="email-role">User Email</Label>
+                    <Input id="email-role" placeholder="user@example.com" value={emailToMakeAdmin} onChange={(e) => setEmailToMakeAdmin(e.target.value)} />
+                </div>
+                <div className="flex gap-2">
+                    <Button onClick={() => handleSetUserRole('admin')} disabled={isSettingRole} className="w-full">
+                        {isSettingRole ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
+                        Make Admin
+                    </Button>
+                     <Button onClick={() => handleSetUserRole('user')} disabled={isSettingRole} variant="secondary" className="w-full">
+                        {isSettingRole ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4" />}
+                        Make User
+                    </Button>
+                </div>
+            </CardContent>
+           </Card>
+           <Card className="lg:col-span-3">
              <CardHeader>
                 <CardTitle>File Storage</CardTitle>
                 <CardDescription>Upload and manage documents.</CardDescription>

@@ -10,48 +10,23 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAuth, useFirestore } from '@/firebase';
-import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { useAuth, useUser, useFirestore } from '@/firebase';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2, Shield, User, Mail, Sparkles } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SecuritySettings } from '@/components/SecuritySettings';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 export default function SettingsPage() {
-  const { user } = useAuth();
-  const firestore = useFirestore();
+  const { user, isAdmin, isUserLoading } = useUser();
+  const auth = useAuth();
   const { toast } = useToast();
 
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [isBootstrapping, setIsBootstrapping] = useState(false);
 
-  useEffect(() => {
-    async function checkAdminStatus() {
-      if (!user || !firestore) {
-        setIsLoading(false);
-        return;
-      }
-      setIsLoading(true);
-      try {
-        const userDoc = await getDoc(doc(firestore, 'users', user.uid));
-        if (userDoc.exists()) {
-          const userData = userDoc.data();
-          setIsAdmin(userData.isAdmin === true || userData.role === 'admin');
-        }
-      } catch (error) {
-        console.error('Error checking admin status:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    checkAdminStatus();
-  }, [user, firestore]);
-
   const handleBootstrapAdmin = async () => {
-    if (!user || !firestore) {
+    if (!user || !user.email) {
       toast({
         title: 'Error',
         description: 'You must be logged in to perform this action',
@@ -63,21 +38,20 @@ export default function SettingsPage() {
     setIsBootstrapping(true);
 
     try {
-      await setDoc(
-        doc(firestore, 'users', user.uid),
-        {
-          role: 'admin',
-          isAdmin: true,
-        },
-        { merge: true }
-      );
+      const functions = getFunctions();
+      const setUserRole = httpsCallable(functions, 'setUserRole');
+      await setUserRole({ email: user.email, role: 'admin' });
 
-      setIsAdmin(true);
+      // Force a refresh of the ID token to get the new custom claim
+      await user.getIdToken(true);
 
       toast({
         title: 'Success!',
-        description: 'You are now an administrator. Refresh the page to access all features.',
+        description: 'You are now an administrator. The page will reload to apply changes.',
       });
+
+      // Reload the page to make sure the new claim is reflected everywhere
+      window.location.reload();
 
     } catch (error) {
       console.error('Error bootstrapping admin:', error);
@@ -91,7 +65,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (isLoading) {
+  if (isUserLoading) {
     return (
       <div className="flex min-h-screen w-full flex-col">
         <Header title="Settings" />
@@ -172,8 +146,7 @@ export default function SettingsPage() {
                 <CardContent className="space-y-4">
                   <div className="rounded-lg bg-orange-50 dark:bg-orange-950/20 p-4 text-sm text-orange-800 dark:text-orange-200">
                     <p>
-                      You need admin privileges to access features like database seeding.
-                      Click the button below to grant yourself admin access.
+                      This is a one-time action for the first user. It will grant your account full administrative rights.
                     </p>
                   </div>
                   <Button
@@ -187,7 +160,7 @@ export default function SettingsPage() {
                     ) : (
                       <Shield className="mr-2 h-4 w-4" />
                     )}
-                    Grant Admin Access
+                    Become Administrator
                   </Button>
                 </CardContent>
               </Card>
