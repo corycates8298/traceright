@@ -49,6 +49,7 @@ type NavLink = {
   href: string;
   label: string;
   icon: LucideIcon;
+  iconColor?: string;
   disabled?: boolean;
   featureFlag?: any;
 };
@@ -62,58 +63,58 @@ const navGroups: NavGroup[] = [
   {
     label: 'Core Logistics',
     links: [
-      { href: '/dashboard/logistics', label: 'Logistics', icon: Truck, featureFlag: 'logistics' },
-      { href: '/dashboard/inventory', label: 'Inventory', icon: Warehouse, featureFlag: 'warehouseOps' },
-      { href: '/dashboard/orders', label: 'Orders', icon: Package, featureFlag: 'purchaseOrders' },
+      { href: '/dashboard/logistics', label: 'Logistics', icon: Truck, iconColor: 'text-blue-500', featureFlag: 'logistics' },
+      { href: '/dashboard/inventory', label: 'Inventory', icon: Warehouse, iconColor: 'text-amber-500', featureFlag: 'warehouseOps' },
+      { href: '/dashboard/orders', label: 'Orders', icon: Package, iconColor: 'text-purple-500', featureFlag: 'purchaseOrders' },
     ],
   },
   {
     label: 'Production',
     links: [
-      { href: '/dashboard/materials', label: 'Materials', icon: Book, featureFlag: 'rawMaterials' },
-      { href: '/dashboard/recipes', label: 'Recipes', icon: Factory, featureFlag: 'recipes' },
-      { href: '/dashboard/products', label: 'Products', icon: Package, featureFlag: 'rawMaterials' },
-      { href: '/dashboard/batches', label: 'Batches', icon: ClipboardList, featureFlag: 'batches' },
+      { href: '/dashboard/materials', label: 'Materials', icon: Book, iconColor: 'text-emerald-500', featureFlag: 'rawMaterials' },
+      { href: '/dashboard/recipes', label: 'Recipes', icon: Factory, iconColor: 'text-orange-500', featureFlag: 'recipes' },
+      { href: '/dashboard/products', label: 'Products', icon: Package, iconColor: 'text-indigo-500', featureFlag: 'rawMaterials' },
+      { href: '/dashboard/batches', label: 'Batches', icon: ClipboardList, iconColor: 'text-cyan-500', featureFlag: 'batches' },
     ],
   },
   {
     label: 'Intelligence',
     links: [
-      { href: '/dashboard/digital-twin', label: 'Digital Twin', icon: Map, featureFlag: 'traceability' },
-      { href: '/dashboard/dashboard-3d', label: 'Dashboard 3D', icon: Box, featureFlag: 'dashboard3D' },
-      { href: '/dashboard/black-reports', label: 'Black Reports', icon: Terminal, featureFlag: 'dashboardCyberpunk' },
-      { href: '/dashboard/demand-forecasting', label: 'Demand Forecasting', icon: TrendingUp, featureFlag: 'aiForecast' },
-      { href: '/dashboard/visual-inspection', label: 'AI Visual Inspection', icon: ScanSearch, featureFlag: 'aiVision' },
-      { href: '/dashboard/reporting', label: 'AI Reporting Hub', icon: FileText, featureFlag: 'aiReporting' },
-      { href: '/dashboard/proactive-agent', label: 'Proactive Agent', icon: Bot, featureFlag: 'traceability' },
-      { href: '/dashboard/ml-intelligence', label: 'ML Intelligence', icon: BrainCircuit, featureFlag: 'mlIntelligence' },
+      { href: '/dashboard/digital-twin', label: 'Digital Twin', icon: Map, iconColor: 'text-teal-500', featureFlag: 'traceability' },
+      { href: '/dashboard/dashboard-3d', label: 'Dashboard 3D', icon: Box, iconColor: 'text-violet-500', featureFlag: 'dashboard3D' },
+      { href: '/dashboard/black-reports', label: 'Black Reports', icon: Terminal, iconColor: 'text-green-500', featureFlag: 'dashboardCyberpunk' },
+      { href: '/dashboard/demand-forecasting', label: 'Demand Forecasting', icon: TrendingUp, iconColor: 'text-pink-500', featureFlag: 'aiForecast' },
+      { href: '/dashboard/visual-inspection', label: 'AI Visual Inspection', icon: ScanSearch, iconColor: 'text-sky-500', featureFlag: 'aiVision' },
+      { href: '/dashboard/reporting', label: 'AI Reporting Hub', icon: FileText, iconColor: 'text-slate-500', featureFlag: 'aiReporting' },
+      { href: '/dashboard/proactive-agent', label: 'Proactive Agent', icon: Bot, iconColor: 'text-fuchsia-500', featureFlag: 'traceability' },
+      { href: '/dashboard/ml-intelligence', label: 'ML Intelligence', icon: BrainCircuit, iconColor: 'text-rose-500', featureFlag: 'mlIntelligence' },
     ],
   },
   {
     label: 'Partners',
     links: [
-      { href: '/dashboard/suppliers', label: 'Suppliers', icon: Users, featureFlag: 'suppliers' },
-      { href: '/dashboard/financials', label: 'Financials', icon: DollarSign, featureFlag: 'logistics' },
+      { href: '/dashboard/suppliers', label: 'Suppliers', icon: Users, iconColor: 'text-blue-600', featureFlag: 'suppliers' },
+      { href: '/dashboard/financials', label: 'Financials', icon: DollarSign, iconColor: 'text-green-600', featureFlag: 'logistics' },
     ],
   },
   {
     label: 'CONFIGURATION',
     links: [
-      { href: '/dashboard/feature-flags', label: '🎛️ Feature Flags', icon: Settings, featureFlag: 'administration' },
+      { href: '/dashboard/feature-flags', label: '🎛️ Feature Flags', icon: Settings, iconColor: 'text-gray-500', featureFlag: 'administration' },
     ],
   },
   {
     label: 'System',
     links: [
-      { href: '/dashboard/admin', label: 'Admin', icon: Shield, featureFlag: 'administration' },
-      { href: '/dashboard/settings', label: 'Settings', icon: Settings, featureFlag: 'administration' },
+      { href: '/dashboard/admin', label: 'Admin', icon: Shield, iconColor: 'text-red-500', featureFlag: 'administration' },
+      { href: '/dashboard/settings', label: 'Settings', icon: Settings, iconColor: 'text-gray-600', featureFlag: 'administration' },
     ],
   },
   {
     label: 'SHOWCASE',
     links: [
-      { href: '/dashboard/next-gen-features', label: '✨ Next-Gen Features', icon: Sparkles, featureFlag: 'showcaseVisualization' },
-      { href: '/dashboard/google-sheets-demo', label: '📊 Google Sheets Demo', icon: Sheet, featureFlag: 'showcaseSheets' },
+      { href: '/dashboard/next-gen-features', label: '✨ Next-Gen Features', icon: Sparkles, iconColor: 'text-yellow-500', featureFlag: 'showcaseVisualization' },
+      { href: '/dashboard/google-sheets-demo', label: '📊 Google Sheets Demo', icon: Sheet, iconColor: 'text-green-500', featureFlag: 'showcaseSheets' },
     ],
   },
 ];
@@ -135,7 +136,7 @@ export function SidebarNav() {
         <Link href="/dashboard" passHref>
           <SidebarMenuButton asChild isActive={pathname === '/dashboard'}>
             <span>
-              <Home />
+              <Home className="text-blue-500" />
               <span>Dashboard</span>
             </span>
           </SidebarMenuButton>
@@ -175,7 +176,7 @@ export function SidebarNav() {
                             disabled={link.disabled}
                           >
                             <span>
-                              <link.icon />
+                              <link.icon className={link.iconColor} />
                               <span>{link.label}</span>
                             </span>
                           </SidebarMenuButton>
