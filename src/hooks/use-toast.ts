@@ -1,3 +1,9 @@
+<<<<<<< HEAD
+"use client"
+
+// Inspired by react-hot-toast library
+=======
+>>>>>>> 7c16f100344dc6fd33114e6a28ff154c0285eb05
 import * as React from "react"
 
 type ToastActionElement = React.ReactElement<any>
