@@ -24,7 +24,7 @@ import {
   Copy,
 } from 'lucide-react';
 import { useState } from 'react';
-import { useToast } from './hooks/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export function SecuritySettings() {
   const { toast } = useToast();
