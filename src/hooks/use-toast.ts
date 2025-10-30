@@ -1,18 +1,25 @@
-
+<<<<<<< HEAD
 "use client"
 
 // Inspired by react-hot-toast library
+=======
+>>>>>>> 7c16f100344dc6fd33114e6a28ff154c0285eb05
 import * as React from "react"
 
-import type {
-  ToastActionElement,
-  ToastProps,
-} from "@/components/ui/toast"
+type ToastActionElement = React.ReactElement<any>
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+export interface Toast {
+  id: string
+  title?: React.ReactNode
+  description?: React.ReactNode
+  action?: ToastActionElement
+  variant?: "default" | "destructive"
+}
 
-type ToasterToast = ToastProps & {
+const TOAST_LIMIT = 3
+const TOAST_REMOVE_DELAY = 5000
+
+type ToasterToast = Toast & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
@@ -29,7 +36,7 @@ const actionTypes = {
 let count = 0
 
 function genId() {
-  count = (count + 1) % Number.MAX_SAFE_INTEGER
+  count = (count + 1) % Number.MAX_VALUE
   return count.toString()
 }
 
@@ -94,8 +101,6 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {

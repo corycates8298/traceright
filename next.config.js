@@ -18,6 +18,18 @@ const nextConfig = {
   eslint: {
     ignoreDuringBuilds: true,
   },
+  webpack: (config, { dev }) => {
+    if (dev) {
+      config.output = {
+        ...config.output,
+        chunkLoadTimeout: 600000,
+      };
+    }
+    return config;
+  },
+  experimental: {
+    webpackBuildWorker: false,
+  },
 };
 
 module.exports = nextConfig;

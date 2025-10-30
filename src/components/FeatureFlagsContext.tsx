@@ -1,3 +1,4 @@
+
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
@@ -148,7 +149,7 @@ export function FeatureFlagsProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Prevent hydration mismatch
+  // Prevent hydration mismatch by returning null on server
   if (!mounted) {
     return null;
   }

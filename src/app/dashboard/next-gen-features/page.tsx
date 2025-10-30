@@ -20,6 +20,10 @@ import {
   Cpu,
   Network
 } from 'lucide-react';
+import { SankeyDiagram } from '@/components/charts/SankeyDiagram';
+import { TreemapVisualization } from '@/components/charts/TreemapVisualization';
+import { FunnelChart } from '@/components/charts/FunnelChart';
+
 
 const features = [
   {
@@ -148,6 +152,15 @@ export default function NextGenFeaturesPage() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-violet-500/20 to-purple-500/20 rounded-full blur-3xl" />
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-pink-500/20 to-purple-500/20 rounded-full blur-3xl" />
         </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-2">
+                <SankeyDiagram />
+            </div>
+            <FunnelChart />
+        </div>
+        <TreemapVisualization />
+
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
