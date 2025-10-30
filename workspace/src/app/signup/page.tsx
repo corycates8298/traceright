@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -59,7 +58,7 @@ export default function SignupPage() {
       });
 
       // Check if the new user is the designated admin
-      const userRole = user.uid === 'hWg5L0Cin3duMKe04jYbrY7Lyik1' ? 'Admin' : 'Reader';
+      const userRole = user.uid === 'hWg5L0Cin3duMKe04jYbrY7Lyik1' ? 'admin' : 'user';
 
       // Create a user profile document in Firestore
       const userRef = doc(firestore, 'users', user.uid);
@@ -69,12 +68,13 @@ export default function SignupPage() {
         displayName: displayName,
         photoURL: user.photoURL,
         role: userRole,
+        isAdmin: userRole === 'admin',
         createdAt: serverTimestamp(),
       });
 
       toast({
         title: 'Account Created',
-        description: userRole === 'Admin' ? 'Welcome, Admin!' : 'Welcome to TraceRight.ai!',
+        description: userRole === 'admin' ? 'Welcome, Admin!' : 'Welcome to TraceRight.ai!',
       });
       router.push('/dashboard');
     } catch (error: any) {
