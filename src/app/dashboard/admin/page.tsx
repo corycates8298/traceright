@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser } from '@/firebase';
 import { Header } from '@/components/layout/header';
 import {
   Card,
@@ -27,8 +27,6 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { doc } from 'firebase/firestore';
-import type { UserProfile } from '@/types';
 import { FileUpload } from '@/components/storage/FileUpload';
 import { FileManager } from '@/components/storage/FileManager';
 import { Input } from '@/components/ui/input';
@@ -54,7 +52,6 @@ function HealthStatus({ title, status, Icon }: { title: string, status: 'Operati
 
 export default function AdminPage() {
   const { user, isAdmin, isUserLoading } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
   const [isSeeding, setIsSeeding] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
@@ -162,11 +159,6 @@ export default function AdminPage() {
     );
   }
 
-<<<<<<< HEAD
-=======
-  const isAdmin = userProfile?.role === 'admin';
-
->>>>>>> origin/claude/add-use-toast-hook-011CUco4wv2EpcdrJQYt8suR
   if (!user || !isAdmin) {
     return (
       <div className="flex min-h-screen w-full flex-col">
@@ -265,11 +257,11 @@ export default function AdminPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <HealthStatus title="Firebase Services" status={firestore ? 'Operational' : 'Error'} Icon={Wifi} />
+                <HealthStatus title="Firebase Services" status={user ? 'Operational' : 'Error'} Icon={Wifi} />
                 <HealthStatus title="Authentication" status={isUserLoading ? 'Checking...' : user ? 'Operational' : 'Error'} Icon={ShieldCheck} />
                 <HealthStatus title="AI Services" status="Operational" Icon={Bot} />
             </CardContent>
-          </Card>
+           </Card>
            <Card>
             <CardHeader>
               <CardTitle>User Role Management</CardTitle>

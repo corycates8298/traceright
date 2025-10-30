@@ -1,3 +1,4 @@
+
 "use client"
 
 // Inspired by react-hot-toast library
@@ -8,23 +9,16 @@ import type {
   ToastProps,
 } from "@/components/ui/toast"
 
-const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+const TOAST_LIMIT = 3
+const TOAST_REMOVE_DELAY = 5000
 
-<<<<<<< HEAD
 type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
-=======
-const TOAST_LIMIT = 3
-const TOAST_REMOVE_DELAY = 5000
-
-type ToasterToast = Toast & {
   open?: boolean
   onOpenChange?: (open: boolean) => void
->>>>>>> origin/claude/add-use-toast-hook-011CUco4wv2EpcdrJQYt8suR
 }
 
 const actionTypes = {
@@ -102,8 +96,6 @@ export const reducer = (state: State, action: Action): State => {
     case "DISMISS_TOAST": {
       const { toastId } = action
 
-      // ! Side effects ! - This could be extracted into a dismissToast() action,
-      // but I'll keep it here for simplicity
       if (toastId) {
         addToRemoveQueue(toastId)
       } else {
@@ -149,9 +141,9 @@ function dispatch(action: Action) {
   })
 }
 
-type ToastProps = Omit<ToasterToast, "id">
+type Toast = Omit<ToasterToast, "id">
 
-function toast({ ...props }: ToastProps) {
+function toast({ ...props }: Toast) {
   const id = genId()
 
   const update = (props: ToasterToast) =>

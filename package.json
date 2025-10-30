@@ -40,7 +40,6 @@
     "firebase": "^10.12.2",
     "firebase-functions": "^6.6.0",
     "genkit": "^1.1.0",
-<<<<<<< HEAD
     "googleapis": "140.0.0",
     "lucide-react": "0.395.0",
     "next": "15.0.0",
@@ -54,16 +53,6 @@
     "three": "0.165.0",
     "zod": "3.23.8",
     "zustand": "4.5.2"
-=======
-    "lucide-react": "^0.395.0",
-    "next": "^14.2.33",
-    "react": "^18",
-    "react-dom": "^18",
-    "recharts": "^2.12.7",
-    "tailwind-merge": "^2.3.0",
-    "tailwindcss-animate": "^1.0.0",
-    "zod": "^3.23.8"
->>>>>>> origin/claude/add-use-toast-hook-011CUco4wv2EpcdrJQYt8suR
   },
   "devDependencies": {
     "@faker-js/faker": "^8.4.1",
