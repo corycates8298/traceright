@@ -44,9 +44,10 @@
 
 name: 'Terraform'
 
-# Disabled until Terraform is properly configured
 on:
-  workflow_dispatch:
+  push:
+    branches: [ "main" ]
+  pull_request:
 
 permissions:
   contents: read
