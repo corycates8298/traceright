@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@genkit-ai/google-genai": "latest",
     "@radix-ui/react-accordion": "^1.2.0",
     "@radix-ui/react-alert-dialog": "^1.1.1",
     "@radix-ui/react-avatar": "^1.1.0",
@@ -31,6 +32,7 @@
     "date-fns": "^3.6.0",
     "firebase": "^10.12.2",
     "firebase-functions": "^6.6.0",
+    "genkit": "^1.1.0",
     "lucide-react": "^0.395.0",
     "next": "14.2.4",
     "react": "^18",
@@ -38,8 +40,6 @@
     "recharts": "^2.12.7",
     "tailwind-merge": "^2.3.0",
     "tailwindcss-animate": "^1.0.0",
-    "genkit": "^1.1.0",
-    "@genkit-ai/google-genai": "latest",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -49,6 +49,7 @@
     "@types/react-dom": "^18",
     "@types/recharts": "^1.8.29",
     "autoprefixer": "^10.4.19",
+    "dotenv": "^17.2.3",
     "eslint": "^8",
     "eslint-config-next": "14.2.4",
     "postcss": "^8",

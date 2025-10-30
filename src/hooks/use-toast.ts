@@ -14,10 +14,8 @@ const TOAST_LIMIT = 3
 const TOAST_REMOVE_DELAY = 5000
 
 type ToasterToast = Toast & {
-  id: string
-  title?: React.ReactNode
-  description?: React.ReactNode
-  action?: ToastActionElement
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 const actionTypes = {
@@ -140,9 +138,9 @@ function dispatch(action: Action) {
   })
 }
 
-type Toast = Omit<ToasterToast, "id">
+type ToastProps = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+function toast({ ...props }: ToastProps) {
   const id = genId()
 
   const update = (props: ToasterToast) =>
