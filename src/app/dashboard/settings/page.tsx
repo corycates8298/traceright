@@ -1,16 +1,8 @@
+
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Header } from '@/components/layout/header';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { useToast } from '@/hooks/use-toast';
-import { useUser } from '@/firebase';
 import {
   Card,
   CardContent,
@@ -19,17 +11,19 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { useAuth, useUser, useFirestore } from '@/firebase';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2, Shield, User, Mail, Sparkles } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { SecuritySettings } from '@/components/SecuritySettings';
+import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
+import { useUser } from '@/firebase';
+import { Loader2, Shield, User, Mail } from 'lucide-react';
 import { getFunctions, httpsCallable } from 'firebase/functions';
+import { SecuritySettings } from '@/components/SecuritySettings';
 
 export default function SettingsPage() {
   const { user, isAdmin, isUserLoading } = useUser();
-  const auth = useAuth();
   const { toast } = useToast();
 
   const [isBootstrapping, setIsBootstrapping] = useState(false);
