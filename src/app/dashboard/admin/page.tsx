@@ -162,6 +162,11 @@ export default function AdminPage() {
     );
   }
 
+<<<<<<< HEAD
+=======
+  const isAdmin = userProfile?.role === 'admin';
+
+>>>>>>> origin/claude/add-use-toast-hook-011CUco4wv2EpcdrJQYt8suR
   if (!user || !isAdmin) {
     return (
       <div className="flex min-h-screen w-full flex-col">

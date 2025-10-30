@@ -11,11 +11,20 @@ import type {
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
 
+<<<<<<< HEAD
 type ToasterToast = ToastProps & {
   id: string
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+=======
+const TOAST_LIMIT = 3
+const TOAST_REMOVE_DELAY = 5000
+
+type ToasterToast = Toast & {
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
+>>>>>>> origin/claude/add-use-toast-hook-011CUco4wv2EpcdrJQYt8suR
 }
 
 const actionTypes = {
@@ -140,9 +149,9 @@ function dispatch(action: Action) {
   })
 }
 
-type Toast = Omit<ToasterToast, "id">
+type ToastProps = Omit<ToasterToast, "id">
 
-function toast({ ...props }: Toast) {
+function toast({ ...props }: ToastProps) {
   const id = genId()
 
   const update = (props: ToasterToast) =>

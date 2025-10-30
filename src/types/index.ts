@@ -176,7 +176,7 @@ export type UserProfile = {
   email: string;
   displayName: string;
   photoURL?: string;
-  role: 'Reader' | 'Editor' | 'Supervisor' | 'Admin';
+  role: 'user' | 'editor' | 'supervisor' | 'admin';
   supervisorId?: string; // doc ref to users
   teamId?: string; // doc ref to teams
   createdAt: any;

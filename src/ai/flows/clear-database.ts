@@ -18,16 +18,24 @@ const ClearDatabaseOutputSchema = z.object({
 export type ClearDatabaseOutput = z.infer<typeof ClearDatabaseOutputSchema>;
 
 export async function clearDatabase(): Promise<ClearDatabaseOutput> {
-  return clearDatabaseFlow();
+  try {
+    console.log('[clear-database] Starting database clearing...');
+    const result = await clearDatabaseFlow();
+    console.log('[clear-database] Clearing completed successfully:', result);
+    return result;
+  } catch (error) {
+    console.error('[clear-database] Error during clearing:', error);
+    throw error;
+  }
 }
 
 const COLLECTIONS_TO_DELETE = [
-    'users',
-    'suppliers', 
-    'materials', 
-    'recipes', 
-    'orders', 
-    'inventory', 
+    // 'users', // Skip users - they can only delete their own documents
+    'suppliers',
+    'materials',
+    'recipes',
+    'orders',
+    'inventory',
     'warehouses',
     'products',
     'batches',
