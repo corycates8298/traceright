@@ -1,230 +1,254 @@
 /**
- * @fileoverview Firestore Security Rules for Supply Chain Application
- *
- * Core Philosophy:
- * This ruleset enforces a mixed security model. User profiles are protected by ownership,
- * suppliers and their related documents are also protected by ownership, and other collections
- * (materials, orders, UI schemas, inventory, products, recipes, and forecasts) are open to all authenticated users for reads,
- * while writes are restricted to authenticated users.
+ * @file Firestore Security Rules
+ * @description This ruleset enforces a combination of user-based and resource-based authorization for a supply chain management application.
  *
  * Data Structure:
- * - /users/{userId}: User profiles, where userId matches the Firebase Auth UID.
- * - /suppliers/{supplierId}: Supplier information.
- * - /suppliers/{supplierId}/documents/{documentId}: Documents related to suppliers.
- * - /materials/{materialId}: Material information.
- * - /materials/{materialId}/forecasts/{forecastId}: Forecasts related to materials.
- * - /orders/{orderId}: Order information.
- * - /uiSchemas/{uiSchemaId}: UI Schemas.
- * - /inventory/{inventoryId}: Inventory information.
- * - /products/{productId}: Product information.
- * - /recipes/{recipeId}: Recipe information.
+ * - `/users/{userId}`: Stores user profile information.
+ * - `/suppliers/{supplierId}`: Stores supplier information.
+ * - `/suppliers/{supplierId}/documents/{documentId}`: Stores documents related to suppliers.
+ * - `/materials/{materialId}`: Stores material information.
+ * - `/materials/{materialId}/forecasts/{forecastId}`: Stores forecast data related to materials.
+ * - `/orders/{orderId}`: Stores order information.
+ * - `/uiSchemas/{uiSchemaId}`: Stores UI schemas.
+ * - `/inventory/{inventoryId}`: Stores inventory information.
+ * - `/products/{productId}`: Stores product information.
+ * - `/recipes/{recipeId}`: Stores recipe information.
  *
  * Key Security Decisions:
- * - Users can only read and write their own profile data.
- * - Suppliers can manage their own information and related documents.
- * - All authenticated users can read materials, orders, UI schemas, inventory, products, recipes, and forecasts.
- * - Only authenticated users can create, update, or delete materials, orders, UI schemas, inventory, products, recipes, and forecasts.
- * - Listing of documents is allowed for owners of user profiles and suppliers.
+ * - User profiles are only accessible and modifiable by the owning user.
+ * - Supplier documents are accessible by authenticated users.
+ * - Subcollections under suppliers (documents) are only accessible to authenticated users.
+ * - All other top-level collections (materials, orders, uiSchemas, inventory, products, recipes) are accessible by authenticated users.
+ * - Data shape validation is relaxed to allow for rapid prototyping.
+ *
+ * Denormalization for Authorization:
+ * - (Not explicitly used in this version, but crucial for future enhancements). Consider denormalizing ownership or role information directly into documents to avoid costly `get()` operations in security rules.  For example, adding a `supplierId` field to the `/orders/{orderId}` document would allow efficient owner-based access control for orders.
+ *
+ * Structural Segregation:
+ * - The application does not currently segregate public vs. private data. All data is treated as requiring authentication.
  */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     /**
-     * @description Checks if the request is made by an authenticated user.
-     * @return {bool} True if the user is signed in, false otherwise.
-     */
-    function isSignedIn() {
-      return request.auth != null;
-    }
-
-    /**
-     * @description Checks if the authenticated user is the owner of the resource.
-     * @param {string} userId - The user ID to compare against the authenticated user's ID.
-     * @return {bool} True if the user is the owner, false otherwise.
-     */
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-
-    /**
-     * @description Checks if the authenticated user is the owner of the resource, ensuring that the resource exists.
-     * @param {string} userId - The user ID to compare against the authenticated user's ID.
-     * @return {bool} True if the user is the owner and the resource exists, false otherwise.
-     */
-    function isExistingOwner(userId) {
-        return isOwner(userId) && resource != null;
-    }
-
-    /**
-     * @description Rules for user profiles.
+     * @description Controls access to user profile documents. Only the authenticated user can read/write their own profile.
      * @path /users/{userId}
-     * @allow (create) User with UID 'user123' can create their profile if request.auth.uid == 'user123'.
-     * @allow (read) User with UID 'user123' can read their profile if request.auth.uid == 'user123'.
-     * @allow (update) User with UID 'user123' can update their profile if request.auth.uid == 'user123'.
-     * @allow (delete) User with UID 'user123' can delete their profile if request.auth.uid == 'user123' and the profile exists.
-     * @deny (create) User with UID 'user456' cannot create a profile for 'user123'.
-     * @deny (read) User with UID 'user456' cannot read the profile of 'user123'.
-     * @deny (update) User with UID 'user456' cannot update the profile of 'user123'.
-     * @deny (delete) User with UID 'user456' cannot delete the profile of 'user123'.
-     * @principle Enforces document ownership for user profiles.
+     * @allow (create) User with UID 'user123' can create their own profile document.
+     * @allow (get) User with UID 'user123' can read their own profile document.
+     * @allow (update) User with UID 'user123' can update their own profile document.
+     * @allow (delete) User with UID 'user123' can delete their own profile document.
+     * @deny (create) User with UID 'user456' cannot create a profile document for 'user123'.
+     * @deny (get) User with UID 'user456' cannot read the profile document of 'user123'.
+     * @deny (update) User with UID 'user456' cannot update the profile document of 'user123'.
+     * @deny (delete) User with UID 'user456' cannot delete the profile document of 'user123'.
+     * @principle Enforces user-ownership for profile data.
      */
     match /users/{userId} {
       allow get: if isOwner(userId);
       allow list: if false;
-      allow create: if isOwner(userId) && request.resource.data.id == userId;
-      allow update: if isExistingOwner(userId) && request.resource.data.id == resource.data.id;
-      allow delete: if isExistingOwner(userId);
+      allow create: if isOwner(userId);
+      allow update: if isOwner(userId) ;
+      allow delete: if isOwner(userId) ;
     }
 
     /**
-     * @description Rules for suppliers.
+     * @description Controls access to supplier documents. Allows any authenticated user to read/write supplier data.
      * @path /suppliers/{supplierId}
-     * @allow (create) User can create a supplier profile with their ID.
-     * @allow (read) Any authenticated user can read supplier profiles.
-     * @allow (update) Supplier with ID 'supplier123' can update their profile if request.auth.uid == 'supplier123'.
-     * @allow (delete) Supplier with ID 'supplier123' can delete their profile if request.auth.uid == 'supplier123' and the profile exists.
-     * @deny (create) User with UID 'user456' cannot create a supplier profile for 'supplier123'.
-     * @deny (update) User with UID 'user456' cannot update the supplier profile of 'supplier123'.
-     * @deny (delete) User with UID 'user456' cannot delete the supplier profile of 'supplier123'.
-     * @principle Enforces document ownership for suppliers.
+     * @allow (create) Authenticated user can create a supplier document.
+     * @allow (get) Authenticated user can read a supplier document.
+     * @allow (update) Authenticated user can update a supplier document.
+     * @allow (delete) Authenticated user can delete a supplier document.
+     * @deny (create) Unauthenticated user cannot create a supplier document.
+     * @deny (get) Unauthenticated user cannot read a supplier document.
+     * @deny (update) Unauthenticated user cannot update a supplier document.
+     * @deny (delete) Unauthenticated user cannot delete a supplier document.
+     * @principle Allows authenticated users to manage supplier data.
      */
     match /suppliers/{supplierId} {
-      allow get, list: if isSignedIn();
-      allow create: if isSignedIn() && request.resource.data.id == supplierId;
-      allow update: if isSignedIn() && request.resource.data.id == supplierId && resource != null;
-      allow delete: if isSignedIn() && resource != null && request.resource.data.id == supplierId;
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Rules for documents related to suppliers.
+     * @description Controls access to documents related to a specific supplier. Allows any authenticated user to read/write supplier documents.
      * @path /suppliers/{supplierId}/documents/{documentId}
-     * @allow (create) User can create a document if they are the supplier.
-     * @allow (read) Any authenticated user can read documents related to a supplier.
-     * @allow (update) Supplier can update their documents.
-     * @allow (delete) Supplier can delete their documents if they exist.
-     * @deny (create) User with UID 'user456' cannot create a document for 'supplier123'.
-     * @deny (update) User with UID 'user456' cannot update the document of 'supplier123'.
-     * @deny (delete) User with UID 'user456' cannot delete the document of 'supplier123'.
-     * @principle Enforces supplier ownership for related documents.
+     * @allow (create) Authenticated user can create a document for a supplier.
+     * @allow (get) Authenticated user can read a document for a supplier.
+     * @allow (update) Authenticated user can update a document for a supplier.
+     * @allow (delete) Authenticated user can delete a document for a supplier.
+     * @deny (create) Unauthenticated user cannot create a document for a supplier.
+     * @deny (get) Unauthenticated user cannot read a document for a supplier.
+     * @deny (update) Unauthenticated user cannot update a document for a supplier.
+     * @deny (delete) Unauthenticated user cannot delete a document for a supplier.
+     * @principle Allows authenticated users to manage supplier-related documents.
      */
     match /suppliers/{supplierId}/documents/{documentId} {
-      allow get, list: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Rules for materials.
+     * @description Controls access to material documents. Allows any authenticated user to read/write material data.
      * @path /materials/{materialId}
-     * @allow (create) Any authenticated user can create material records.
-     * @allow (read) Any authenticated user can read material records.
-     * @allow (update) Any authenticated user can update material records.
-     * @allow (delete) Any authenticated user can delete material records.
-     * @principle Allows authenticated users to manage material information.
+     * @allow (create) Authenticated user can create a material document.
+     * @allow (get) Authenticated user can read a material document.
+     * @allow (update) Authenticated user can update a material document.
+     * @allow (delete) Authenticated user can delete a material document.
+     * @deny (create) Unauthenticated user cannot create a material document.
+     * @deny (get) Unauthenticated user cannot read a material document.
+     * @deny (update) Unauthenticated user cannot update a material document.
+     * @deny (delete) Unauthenticated user cannot delete a material document.
+     * @principle Allows authenticated users to manage material data.
      */
     match /materials/{materialId} {
-      allow get, list: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Rules for forecasts related to materials.
+     * @description Controls access to forecast documents related to a specific material. Allows any authenticated user to read/write forecast data.
      * @path /materials/{materialId}/forecasts/{forecastId}
-     * @allow (create) Any authenticated user can create forecasts for a material.
-     * @allow (read) Any authenticated user can read forecasts for a material.
-     * @allow (update) Any authenticated user can update forecasts for a material if they exist.
-     * @allow (delete) Any authenticated user can delete forecasts for a material if they exist.
-     * @principle Allows authenticated users to manage forecast information.
+     * @allow (create) Authenticated user can create a forecast for a material.
+     * @allow (get) Authenticated user can read a forecast for a material.
+     * @allow (update) Authenticated user can update a forecast for a material.
+     * @allow (delete) Authenticated user can delete a forecast for a material.
+     * @deny (create) Unauthenticated user cannot create a forecast for a material.
+     * @deny (get) Unauthenticated user cannot read a forecast for a material.
+     * @deny (update) Unauthenticated user cannot update a forecast for a material.
+     * @deny (delete) Unauthenticated user cannot delete a forecast for a material.
+     * @principle Allows authenticated users to manage material forecasts.
      */
     match /materials/{materialId}/forecasts/{forecastId} {
-      allow get, list: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Rules for orders.
+     * @description Controls access to order documents. Allows any authenticated user to read/write order data.
      * @path /orders/{orderId}
-     * @allow (create) Any authenticated user can create order records.
-     * @allow (read) Any authenticated user can read order records.
-     * @allow (update) Any authenticated user can update order records.
-     * @allow (delete) Any authenticated user can delete order records.
-     * @principle Allows authenticated users to manage order information.
+     * @allow (create) Authenticated user can create an order document.
+     * @allow (get) Authenticated user can read an order document.
+     * @allow (update) Authenticated user can update an order document.
+     * @allow (delete) Authenticated user can delete an order document.
+     * @deny (create) Unauthenticated user cannot create an order document.
+     * @deny (get) Unauthenticated user cannot read an order document.
+     * @deny (update) Unauthenticated user cannot update an order document.
+     * @deny (delete) Unauthenticated user cannot delete an order document.
+     * @principle Allows authenticated users to manage order data.
      */
     match /orders/{orderId} {
-      allow get, list: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Rules for UI schemas.
+     * @description Controls access to UI schema documents. Allows any authenticated user to read/write UI schema data.
      * @path /uiSchemas/{uiSchemaId}
-     * @allow (create) Any authenticated user can create UI schema records.
-     * @allow (read) Any authenticated user can read UI schema records.
-     * @allow (update) Any authenticated user can update UI schema records.
-     * @allow (delete) Any authenticated user can delete UI schema records.
-     * @principle Allows authenticated users to manage UI schema information.
+     * @allow (create) Authenticated user can create a UI schema document.
+     * @allow (get) Authenticated user can read a UI schema document.
+     * @allow (update) Authenticated user can update a UI schema document.
+     * @allow (delete) Authenticated user can delete a UI schema document.
+     * @deny (create) Unauthenticated user cannot create a UI schema document.
+     * @deny (get) Unauthenticated user cannot read a UI schema document.
+     * @deny (update) Unauthenticated user cannot update a UI schema document.
+     * @deny (delete) Unauthenticated user cannot delete a UI schema document.
+     * @principle Allows authenticated users to manage UI schemas.
      */
     match /uiSchemas/{uiSchemaId} {
-      allow get, list: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Rules for inventory.
+     * @description Controls access to inventory documents. Allows any authenticated user to read/write inventory data.
      * @path /inventory/{inventoryId}
-     * @allow (create) Any authenticated user can create inventory records.
-     * @allow (read) Any authenticated user can read inventory records.
-     * @allow (update) Any authenticated user can update inventory records.
-     * @allow (delete) Any authenticated user can delete inventory records.
-     * @principle Allows authenticated users to manage inventory information.
+     * @allow (create) Authenticated user can create an inventory document.
+     * @allow (get) Authenticated user can read an inventory document.
+     * @allow (update) Authenticated user can update an inventory document.
+     * @allow (delete) Authenticated user can delete an inventory document.
+     * @deny (create) Unauthenticated user cannot create an inventory document.
+     * @deny (get) Unauthenticated user cannot read an inventory document.
+     * @deny (update) Unauthenticated user cannot update an inventory document.
+     * @deny (delete) Unauthenticated user cannot delete an inventory document.
+     * @principle Allows authenticated users to manage inventory data.
      */
     match /inventory/{inventoryId} {
-      allow get, list: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Rules for products.
+     * @description Controls access to product documents. Allows any authenticated user to read/write product data.
      * @path /products/{productId}
-     * @allow (create) Any authenticated user can create product records.
-     * @allow (read) Any authenticated user can read product records.
-     * @allow (update) Any authenticated user can update product records.
-     * @allow (delete) Any authenticated user can delete product records.
-     * @principle Allows authenticated users to manage product information.
+     * @allow (create) Authenticated user can create a product document.
+     * @allow (get) Authenticated user can read a product document.
+     * @allow (update) Authenticated user can update a product document.
+     * @allow (delete) Authenticated user can delete a product document.
+     * @deny (create) Unauthenticated user cannot create a product document.
+     * @deny (get) Unauthenticated user cannot read a product document.
+     * @deny (update) Unauthenticated user cannot update a product document.
+     * @deny (delete) Unauthenticated user cannot delete a product document.
+     * @principle Allows authenticated users to manage product data.
      */
     match /products/{productId} {
-      allow get, list: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
 
     /**
-     * @description Rules for recipes.
+     * @description Controls access to recipe documents. Allows any authenticated user to read/write recipe data.
      * @path /recipes/{recipeId}
-     * @allow (create) Any authenticated user can create recipe records.
-     * @allow (read) Any authenticated user can read recipe records.
-     * @allow (update) Any authenticated user can update recipe records.
-     * @allow (delete) Any authenticated user can delete recipe records.
-     * @principle Allows authenticated users to manage recipe information.
+     * @allow (create) Authenticated user can create a recipe document.
+     * @allow (get) Authenticated user can read a recipe document.
+     * @allow (update) Authenticated user can update a recipe document.
+     * @allow (delete) Authenticated user can delete a recipe document.
+     * @deny (create) Unauthenticated user cannot create a recipe document.
+     * @deny (get) Unauthenticated user cannot read a recipe document.
+     * @deny (update) Unauthenticated user cannot update a recipe document.
+     * @deny (delete) Unauthenticated user cannot delete a recipe document.
+     * @principle Allows authenticated users to manage recipe data.
      */
     match /recipes/{recipeId} {
-      allow get, list: if isSignedIn();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+      allow update: if isSignedIn();
+      allow delete: if isSignedIn();
     }
+  }
+
+  // Helper function to determine if the user is signed in
+  function isSignedIn() {
+    return request.auth != null;
+  }
+
+  // Helper function to determine if the user is the owner of the resource
+  function isOwner(userId) {
+    return request.auth.uid == userId;
   }
 }
