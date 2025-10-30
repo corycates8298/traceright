@@ -22,12 +22,12 @@ export async function clearDatabase(): Promise<ClearDatabaseOutput> {
 }
 
 const COLLECTIONS_TO_DELETE = [
-    'users',
-    'suppliers', 
-    'materials', 
-    'recipes', 
-    'orders', 
-    'inventory', 
+    // 'users', // Skip users - they can only delete their own documents
+    'suppliers',
+    'materials',
+    'recipes',
+    'orders',
+    'inventory',
     'warehouses',
     'products',
     'batches',

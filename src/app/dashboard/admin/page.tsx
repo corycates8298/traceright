@@ -128,7 +128,7 @@ export default function AdminPage() {
     );
   }
 
-  const isAdmin = userProfile?.role === 'Admin';
+  const isAdmin = userProfile?.role === 'admin';
 
   if (!user || !isAdmin) {
     return (
