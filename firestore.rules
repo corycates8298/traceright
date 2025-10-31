@@ -12,19 +12,15 @@ service cloud.firestore {
      * @principle Enforces document ownership for user profiles.
      */
     match /users/{userId} {
-      function isSignedIn() {
-        return request.auth != null;
-      }
-
       function isOwner(userId) {
         return request.auth.uid == userId;
       }
 
       allow get: if isOwner(userId);
       allow list: if false; // Listing users is not permitted.
-      allow create: if isSignedIn() && isOwner(userId);
-      allow update: if isSignedIn() && isOwner(userId);
-      allow delete: if isSignedIn() && isOwner(userId);
+      allow create: if request.auth.uid == userId;
+      allow update: if isOwner(userId);
+      allow delete: if isOwner(userId);
     }
 
     /**
@@ -209,6 +205,7 @@ service cloud.firestore {
     }
 
     match /warehouses/{warehouseId} {
+      function isSignedIn() { return request.auth != null; }
       allow get, list: if true;
       allow create: if isSignedIn();
       allow update: if isSignedIn() && resource != null;
@@ -216,6 +213,7 @@ service cloud.firestore {
     }
 
     match /batches/{batchId} {
+      function isSignedIn() { return request.auth != null; }
       allow get, list: if true;
       allow create: if isSignedIn();
       allow update: if isSignedIn() && resource != null;
@@ -223,6 +221,7 @@ service cloud.firestore {
     }
 
     match /shipments/{shipmentId} {
+      function isSignedIn() { return request.auth != null; }
       allow get, list: if true;
       allow create: if isSignedIn();
       allow update: if isSignedIn() && resource != null;
@@ -230,6 +229,7 @@ service cloud.firestore {
     }
 
     match /inventoryLocations/{locationId} {
+      function isSignedIn() { return request.auth != null; }
       allow get, list: if true;
       allow create: if isSignedIn();
       allow update: if isSignedIn() && resource != null;
@@ -237,6 +237,7 @@ service cloud.firestore {
     }
 
     match /inventoryAdjustments/{adjustmentId} {
+      function isSignedIn() { return request.auth != null; }
       allow get, list: if isSignedIn();
       allow create: if isSignedIn();
       allow update: if isSignedIn() && resource != null;
@@ -244,6 +245,7 @@ service cloud.firestore {
     }
 
     match /assetManagement/{assetId} {
+      function isSignedIn() { return request.auth != null; }
       allow get, list: if isSignedIn();
       allow create: if isSignedIn();
       allow update: if isSignedIn() && resource != null;
@@ -251,6 +253,7 @@ service cloud.firestore {
     }
 
     match /payments/{paymentId} {
+      function isSignedIn() { return request.auth != null; }
       allow get, list: if isSignedIn();
       allow create: if isSignedIn();
       allow update: if isSignedIn() && resource != null;
@@ -258,6 +261,7 @@ service cloud.firestore {
     }
 
     match /auditLog/{logId} {
+      function isSignedIn() { return request.auth != null; }
       allow get, list: if isSignedIn();
       allow create: if isSignedIn();
       allow update: if false;
@@ -265,6 +269,7 @@ service cloud.firestore {
     }
 
     match /governanceDocs/{docId} {
+      function isSignedIn() { return request.auth != null; }
       allow get, list: if isSignedIn();
       allow create: if isSignedIn();
       allow update: if isSignedIn() && resource != null;
