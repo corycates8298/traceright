@@ -1,0 +1,86 @@
+mutation CreateSeedData @transaction @auth(level: PUBLIC, insecureReason: "This operation is used to seed the database and is safe to expose to the public") {
+  location_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      address: "123 Main St",
+      locationName: "Warehouse A",
+      locationType: "Warehouse"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440001",
+      address: "456 Elm St",
+      locationName: "Distribution Center B",
+      locationType: "Distribution Center"
+    }
+  ])
+  product_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440002",
+      createdAt: "2024-01-01T00:00:00Z",
+      productName: "Widget X",
+      productCategory: "Widgets",
+      productID: "WX-123"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440003",
+      createdAt: "2024-01-02T00:00:00Z",
+      productName: "Gadget Y",
+      productCategory: "Gadgets",
+      productID: "GY-456"
+    }
+  ])
+  shipment_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440004",
+      originLocationId: "550e8400-e29b-41d4-a716-446655440000",
+      destinationLocationId: "550e8400-e29b-41d4-a716-446655440001",
+      departureDate: "2024-01-05",
+      estimatedArrivalDate: "2024-01-07",
+      currentStatus: "In Transit",
+      shipmentID: "SH-789"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440005",
+      originLocationId: "550e8400-e29b-41d4-a716-446655440001",
+      destinationLocationId: "550e8400-e29b-41d4-a716-446655440000",
+      departureDate: "2024-01-06",
+      estimatedArrivalDate: "2024-01-08",
+      currentStatus: "Pending",
+      shipmentID: "SH-012"
+    }
+  ])
+  supplier_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440006",
+      supplierName: "Acme Corp",
+      contactEmail: "contact@acme.com",
+      contactPerson: "John Doe"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440007",
+      supplierName: "Beta Industries",
+      contactEmail: "info@beta.com",
+      contactPerson: "Jane Smith"
+    }
+  ])
+  traceEvent_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440008",
+      shipmentId: "550e8400-e29b-41d4-a716-446655440004",
+      productId: "550e8400-e29b-41d4-a716-446655440002",
+      locationId: "550e8400-e29b-41d4-a716-446655440000",
+      eventTimestamp: "2024-01-05T12:00:00Z",
+      eventType: "Departure",
+      description: "Shipment departed from origin"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440009",
+      shipmentId: "550e8400-e29b-41d4-a716-446655440005",
+      productId: "550e8400-e29b-41d4-a716-446655440003",
+      locationId: "550e8400-e29b-41d4-a716-446655440001",
+      eventTimestamp: "2024-01-06T14:00:00Z",
+      eventType: "Arrival",
+      description: "Shipment arrived at destination"
+    }
+  ])
+}

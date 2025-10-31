@@ -1,0 +1,57 @@
+type Product @table {
+  productName: String!
+  productID: String!
+  productCategory: String!
+  createdAt: Timestamp!
+  description: String
+  manufacturer: String
+  weight: Float
+  dimensions: String
+  imageUrl: String
+}
+
+type Location @table {
+  locationName: String!
+  address: String!
+  locationType: String!
+  latitude: Float
+  longitude: Float
+  contactPerson: String
+  contactPhone: String
+}
+
+type Shipment @table {
+  shipmentID: String!
+  departureDate: Date!
+  estimatedArrivalDate: Date!
+  currentStatus: String!
+  actualArrivalDate: Date
+  carrierName: String
+  trackingNumber: String
+  notes: String
+  originLocation: Location
+  destinationLocation: Location
+}
+
+type TraceEvent @table {
+  eventType: String!
+  eventTimestamp: Timestamp!
+  description: String!
+  batchID: String
+  quantityAffected: Int
+  qualityStatus: String
+  responsibleParty: String
+  product: Product
+  location: Location
+  shipment: Shipment
+}
+
+type Supplier @table {
+  supplierName: String!
+  contactPerson: String!
+  contactEmail: String!
+  address: String
+  phone: String
+  certifications: String
+  supplierRating: Int
+}

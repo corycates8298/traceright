@@ -1,0 +1,68 @@
+mutation AddNewLocation(
+  $address: String!
+  $contactPerson: String
+  $contactPhone: String
+  $latitude: Float
+  $locationName: String!
+  $locationType: String!
+  $longitude: Float
+) @auth(level: USER) {
+  location_insert(
+    data: {
+      address: $address
+      contactPerson: $contactPerson
+      contactPhone: $contactPhone
+      latitude: $latitude
+      locationName: $locationName
+      locationType: $locationType
+      longitude: $longitude
+    }
+  )
+}
+
+query ListAllProducts @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  products {
+    id
+    productName
+    productID
+    productCategory
+    manufacturer
+    description
+    dimensions
+    weight
+    imageUrl
+    createdAt
+  }
+}
+
+mutation UpdateShipmentStatus(
+  $id: UUID!
+  $currentStatus: String!
+) @auth(level: USER) {
+  shipment_update(
+    id: $id,
+    data: {
+      currentStatus: $currentStatus
+    }
+  )
+}
+
+query ListTraceEventsForShipment($shipmentId: UUID!) @auth(level: USER) {
+  traceEvents(where: {shipmentId: {eq: $shipmentId}}) {
+    id
+    eventTimestamp
+    eventType
+    description
+    location {
+      locationName
+      address
+    }
+    product {
+      productName
+      productID
+    }
+    quantityAffected
+    qualityStatus
+    responsibleParty
+  }
+}
