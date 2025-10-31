@@ -1,3 +1,4 @@
+
 'use client';
 
 import { firebaseConfig } from '@/firebase/config';
@@ -12,7 +13,7 @@ export function initializeFirebase() {
   if (!getApps().length) {
     let firebaseApp;
     try {
-      firebaseApp = initializeApp();
+      firebaseApp = initializeApp(firebaseConfig);
     } catch (e) {
       if (process.env.NODE_ENV === "production") {
         console.warn('Automatic initialization failed. Falling back to firebase config object.', e);
@@ -21,22 +22,21 @@ export function initializeFirebase() {
     }
     
     // Initialize App Check
-    if (typeof window !== 'undefined') {
-        // FOR DEVELOPMENT ONLY: Use App Check debug token
-        if (process.env.NODE_ENV === 'development') {
-            (window as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-        }
+    // if (typeof window !== 'undefined') {
+    //     // FOR DEVELOPMENT ONLY: Use App Check debug token
+    //     if (process.env.NODE_ENV === 'development') {
+    //         (window as any).FIREBASE_APPCHECK_DEBUG_TOKEN = true;
+    //     }
 
-        try {
-            const appCheck = initializeAppCheck(firebaseApp, {
-                // You can use a placeholder key for development
-                provider: new ReCaptchaV3Provider('6Ld-1vApAAAAAOFf3-S4T8c4j2h-M2L4xR-5S3vE'), 
-                isTokenAutoRefreshEnabled: true
-            });
-        } catch (error) {
-            console.error("App Check initialization error:", error);
-        }
-    }
+    //     try {
+    //         const appCheck = initializeAppCheck(firebaseApp, {
+    //             provider: new ReCaptchaV3Provider('6Ld-1vApAAAAAOFf3-S4T8c4j2h-M2L4xR-5S3vE'), // placeholder key
+    //             isTokenAutoRefreshEnabled: true
+    //         });
+    //     } catch (error) {
+    //         console.error("App Check initialization error:", error);
+    //     }
+    // }
 
     return getSdks(firebaseApp);
   }
@@ -59,7 +59,5 @@ export * from './provider';
 export * from './client-provider';
 export * from './firestore/use-collection';
 export * from './firestore/use-doc';
-export * from './non-blocking-updates';
-export * from './non-blocking-login';
 export * from './errors';
 export * from './error-emitter';

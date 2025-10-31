@@ -43,12 +43,11 @@ export default function LoginPage() {
 
     try {
         await signInWithEmailAndPassword(auth, email, password);
-        // onAuthStateChanged in provider will handle the redirect
         toast({
             title: "Sign in successful",
             description: "Welcome back!",
         });
-        // The useEffect above will redirect.
+        router.push('/dashboard');
     } catch (error: any) {
         console.error("Sign in error:", error);
         toast({
