@@ -1,10 +1,7 @@
 {
   "firestore": {
-<<<<<<< HEAD
     "database": "(default)",
     "location": "us-central1",
-=======
->>>>>>> origin/claude/add-use-toast-hook-011CUco4wv2EpcdrJQYt8suR
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
   }
