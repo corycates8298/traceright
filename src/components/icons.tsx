@@ -3,30 +3,41 @@ import type { SVGProps } from 'react';
 export function Logo(props: SVGProps<SVGSVGElement>) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
       viewBox="0 0 24 24"
       fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      xmlns="http://www.w3.org/2000/svg"
       {...props}
     >
-      <path d="M3.5 10.5c.88 0 1.63-.44 2.1-1.12" />
-      <path d="M4.64 15.5c.82.63 1.94.99 3.11.99h.5" />
-      <path d_1="M17.5 10.5c-.88 0-1.63-.44-2.1-1.12" />
-      <path d_2="M19.36 15.5c-.82.63-1.94.99-3.11.99h-.5" />
-      <path d="M12 2v2" />
-      <path d="m4.93 4.93 1.41 1.41" />
-      <path d="m17.66 6.34 1.41-1.41" />
-      <path d_3="M12 10a2 2 0 0 0-2 2v1.5a2 2 0 0 1-2 2" />
-      <path d_4="M14 12a2 2 0 0 0 2-2" />
-      <path d_5="M12 22v-2" />
-      <path d_6="m4.93 19.07 1.41-1.41" />
-      <path d_7="m17.66 17.66 1.41 1.41" />
-      <circle cx="12" cy="12" r="10" />
-      <path d="m8 14 3-3 4 4" />
-      <path d="m13 15 2-2" />
+      <path
+        d="M12 2L2 7V17L12 22L22 17V7L12 2Z"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M2 7L12 12L22 7"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12 12V22"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M17 4.5L7 9.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
