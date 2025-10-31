@@ -10,7 +10,6 @@ import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
@@ -21,11 +20,13 @@ import { Loader2 } from 'lucide-react';
 import { Logo } from '@/components/icons';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import Image from 'next/image';
+import './globals.css';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
   const router = useRouter();
   const auth = useAuth();
   const { user, isUserLoading } = useUser();
@@ -40,26 +41,61 @@ export default function LoginPage() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setError('');
+
+    // Validation
+    if (!email || !password) {
+      setError('Please fill in all fields');
+      setIsLoading(false);
+      return;
+    }
 
     try {
-        await signInWithEmailAndPassword(auth, email, password);
-        // onAuthStateChanged in provider will handle the redirect
-        toast({
-            title: "Sign in successful",
-            description: "Welcome back!",
-        });
-        // The useEffect above will redirect.
-    } catch (error: any) {
-        console.error("Sign in error:", error);
-        toast({
-            variant: "destructive",
-            title: "Sign In Failed",
-            description: "The email or password you entered is incorrect.",
-        });
+      await signInWithEmailAndPassword(auth, email, password);
+      toast({
+        title: "Sign in successful",
+        description: "Welcome back!",
+      });
+      router.push('/dashboard');
+    } catch (err: any) {
+      console.error('Sign in error:', err);
+      let errorMessage = 'Failed to sign in. Please check your credentials.';
+      switch (err.code) {
+        case 'auth/network-request-failed':
+          errorMessage = 'Network error. Please check your connection.';
+          break;
+        case 'auth/invalid-email':
+        case 'auth/user-not-found':
+        case 'auth/wrong-password':
+          errorMessage = 'Invalid email or password.';
+          break;
+        case 'auth/user-disabled':
+          errorMessage = 'This account has been disabled.';
+          break;
+        case 'auth/too-many-requests':
+          errorMessage = 'Too many failed login attempts. Please try again later.';
+          break;
+        default:
+          errorMessage = err.message || 'An unexpected error occurred.';
+      }
+      setError(errorMessage);
+      toast({
+        variant: "destructive",
+        title: "Sign In Failed",
+        description: errorMessage,
+      });
     } finally {
-        setIsLoading(false);
+      setIsLoading(false);
     }
   };
+
+  if (isUserLoading || (!isUserLoading && user)) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="w-full lg:grid lg:min-h-screen lg:grid-cols-2 xl:min-h-screen">
@@ -104,6 +140,11 @@ export default function LoginPage() {
                 disabled={isLoading}
               />
             </div>
+             {error && (
+              <div className="rounded-md bg-red-50 p-3">
+                <p className="text-sm text-red-800">{error}</p>
+              </div>
+            )}
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Login

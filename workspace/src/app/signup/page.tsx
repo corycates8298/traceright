@@ -21,6 +21,7 @@ import { Logo } from '@/components/icons';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { setDoc, doc, serverTimestamp, getDocs, collection } from 'firebase/firestore';
 import Image from 'next/image';
+import './globals.css';
 
 export default function SignupPage() {
   const [firstName, setFirstName] = useState('');
