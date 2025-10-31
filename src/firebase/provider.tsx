@@ -1,10 +1,13 @@
+
 'use client';
 
 import React, { DependencyList, createContext, useContext, ReactNode, useMemo, useState, useEffect } from 'react';
 import { FirebaseApp } from 'firebase/app';
-import { Firestore } from 'firebase/firestore';
-import { Auth, User, onIdTokenChanged } from 'firebase/auth';
-import { FirebaseErrorListener } from '@/components/FirebaseErrorListener'
+import { Firestore, doc, getDoc } from 'firebase/firestore';
+import { Auth, User, onAuthStateChanged } from 'firebase/auth';
+import { FirebaseErrorListener } from '@/components/FirebaseErrorListener';
+import type { UserProfile } from '@/types';
+
 
 interface FirebaseProviderProps {
   children: ReactNode;
@@ -69,32 +72,37 @@ export const FirebaseProvider: React.FC<FirebaseProviderProps> = ({
       return;
     }
 
-    setUserAuthState({ user: null, isAdmin: false, isUserLoading: true, userError: null });
-
-    const unsubscribe = onIdTokenChanged(
+    const unsubscribe = onAuthStateChanged(
       auth,
       async (firebaseUser) => {
         if (firebaseUser) {
           try {
-            // Force refresh to get latest claims if needed, though onIdTokenChanged helps
-            const idTokenResult = await firebaseUser.getIdTokenResult(true);
-            const isAdmin = idTokenResult.claims.role === 'admin';
+            // Check for admin role from Firestore
+            const userDocRef = doc(firestore, 'users', firebaseUser.uid);
+            const userDoc = await getDoc(userDocRef);
+            let isAdmin = false;
+            if (userDoc.exists()) {
+              const userData = userDoc.data() as UserProfile;
+              isAdmin = userData.role === 'admin';
+            }
             setUserAuthState({ user: firebaseUser, isAdmin, isUserLoading: false, userError: null });
           } catch (error) {
-            console.error("Error getting ID token result:", error);
+            console.error("Error fetching user profile:", error);
+            // Log in user even if profile fetch fails, but without admin rights
             setUserAuthState({ user: firebaseUser, isAdmin: false, isUserLoading: false, userError: error as Error });
           }
         } else {
+          // User is signed out
           setUserAuthState({ user: null, isAdmin: false, isUserLoading: false, userError: null });
         }
       },
       (error) => {
-        console.error("FirebaseProvider: onIdTokenChanged error:", error);
+        console.error("FirebaseProvider: onAuthStateChanged error:", error);
         setUserAuthState({ user: null, isAdmin: false, isUserLoading: false, userError: error });
       }
     );
     return () => unsubscribe();
-  }, [auth]);
+  }, [auth, firestore]);
 
   const contextValue = useMemo((): FirebaseContextState => {
     const servicesAvailable = !!(firebaseApp && firestore && auth);
