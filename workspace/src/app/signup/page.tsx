@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '@/firebase';
+import { useAuth, useFirestore } from '@/firebase';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -18,8 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import { Logo } from '@/components/icons';
 import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
-import { setDoc, doc, serverTimestamp } from 'firebase/firestore';
-import { useFirestore } from '@/firebase';
+import { setDoc, doc, serverTimestamp, getDocs, collection } from 'firebase/firestore';
 import Image from 'next/image';
 
 export default function SignupPage() {
@@ -45,6 +45,10 @@ export default function SignupPage() {
     }
     setIsLoading(true);
     try {
+      // Check if this is the first user
+      const usersSnapshot = await getDocs(collection(firestore, 'users'));
+      const isFirstUser = usersSnapshot.empty;
+
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
@@ -56,9 +60,8 @@ export default function SignupPage() {
       await updateProfile(user, {
         displayName: displayName,
       });
-
-      // Check if the new user is the designated admin
-      const userRole = user.uid === 'hWg5L0Cin3duMKe04jYbrY7Lyik1' ? 'admin' : 'user';
+      
+      const userRole = isFirstUser ? 'admin' : 'user';
 
       // Create a user profile document in Firestore
       const userRef = doc(firestore, 'users', user.uid);
@@ -68,13 +71,12 @@ export default function SignupPage() {
         displayName: displayName,
         photoURL: user.photoURL,
         role: userRole,
-        isAdmin: userRole === 'admin',
         createdAt: serverTimestamp(),
       });
 
       toast({
         title: 'Account Created',
-        description: userRole === 'admin' ? 'Welcome, Admin!' : 'Welcome to TraceRight.ai!',
+        description: userRole === 'admin' ? 'Welcome, Admin! Your account has full privileges.' : 'Welcome to TraceRight.ai!',
       });
       router.push('/dashboard');
     } catch (error: any) {

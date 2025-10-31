@@ -2,7 +2,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useUser, useFirestore, useDoc, useMemoFirebase } from '@/firebase';
+import { useUser } from '@/firebase';
 import { Header } from '@/components/layout/header';
 import {
   Card,
@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { Loader2, Database, Trash2, ShieldCheck, Wifi, Bot } from 'lucide-react';
+import { Loader2, Database, Trash2, ShieldCheck, Wifi, Bot, UserPlus, Shield } from 'lucide-react';
 import { seedDatabase } from '@/ai/flows/seed-database';
 import { clearDatabase } from '@/ai/flows/clear-database';
 import {
@@ -27,8 +27,11 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { doc } from 'firebase/firestore';
-import type { UserProfile } from '@/types';
+import { FileUpload } from '@/components/storage/FileUpload';
+import { FileManager } from '@/components/storage/FileManager';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 
 function HealthStatus({ title, status, Icon }: { title: string, status: 'Operational' | 'Error' | 'Checking...', Icon: React.ElementType }) {
   const statusColor = status === 'Operational' ? 'text-green-500' : status === 'Error' ? 'text-red-500' : 'text-yellow-500';
@@ -48,18 +51,47 @@ function HealthStatus({ title, status, Icon }: { title: string, status: 'Operati
 
 
 export default function AdminPage() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const { user, isAdmin, isUserLoading } = useUser();
   const { toast } = useToast();
   const [isSeeding, setIsSeeding] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
+  const [fileManagerKey, setFileManagerKey] = useState(Date.now());
+  const [emailToMakeAdmin, setEmailToMakeAdmin] = useState('');
+  const [isSettingRole, setIsSettingRole] = useState(false);
 
-  const userProfileRef = useMemoFirebase(
-    () => (user ? doc(firestore, 'users', user.uid) : null),
-    [user, firestore]
-  );
-  const { data: userProfile, isLoading: isProfileLoading } =
-    useDoc<UserProfile>(userProfileRef);
+  const onUploadComplete = () => {
+    setFileManagerKey(Date.now()); // Re-mount FileManager to fetch new files
+  };
+
+  const handleSetUserRole = async (role: 'admin' | 'user') => {
+    if (!emailToMakeAdmin) {
+      toast({
+        variant: 'destructive',
+        title: 'Email is required',
+      });
+      return;
+    }
+    setIsSettingRole(true);
+    try {
+      const functions = getFunctions();
+      const setUserRole = httpsCallable(functions, 'setUserRole');
+      const result = await setUserRole({ email: emailToMakeAdmin, role });
+      toast({
+        title: 'Success',
+        description: (result.data as any).message,
+      });
+      setEmailToMakeAdmin('');
+    } catch (error: any) {
+      console.error('Error setting user role:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Failed to set user role',
+        description: error.message,
+      });
+    } finally {
+      setIsSettingRole(false);
+    }
+  };
 
   const handleSeed = async () => {
     setIsSeeding(true);
@@ -109,8 +141,7 @@ export default function AdminPage() {
     }
   };
 
-  const isLoading = isUserLoading || isProfileLoading;
-  if (isLoading) {
+  if (isUserLoading) {
     return (
       <div className="flex min-h-screen w-full flex-col">
         <Header title="Admin" />
@@ -128,8 +159,6 @@ export default function AdminPage() {
     );
   }
 
-  const isAdmin = userProfile?.role === 'Admin';
-
   if (!user || !isAdmin) {
     return (
       <div className="flex min-h-screen w-full flex-col">
@@ -143,7 +172,7 @@ export default function AdminPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p>Please contact your system administrator.</p>
+              <p>Please contact an administrator to grant you access.</p>
             </CardContent>
           </Card>
         </main>
@@ -156,7 +185,7 @@ export default function AdminPage() {
       <Header title="Admin Panel" />
       <main className="flex-1 p-4 sm:p-6">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="lg:col-span-2">
+          <Card>
             <CardHeader>
               <CardTitle>Database Management</CardTitle>
               <CardDescription>
@@ -177,7 +206,7 @@ export default function AdminPage() {
                   ) : (
                     <Database className="mr-2 h-4 w-4" />
                   )}
-                  Seed Data
+                  Seed
                 </Button>
               </div>
 
@@ -187,7 +216,7 @@ export default function AdminPage() {
                     Clear Database
                   </h3>
                   <p className="text-sm text-muted-foreground">
-                    Permanently delete all data from the collections.
+                    Permanently delete all data.
                   </p>
                 </div>
                 <AlertDialog>
@@ -201,7 +230,7 @@ export default function AdminPage() {
                       ) : (
                         <Trash2 className="mr-2 h-4 w-4" />
                       )}
-                      Clear Data
+                      Clear
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
@@ -228,30 +257,50 @@ export default function AdminPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <HealthStatus title="Firebase Services" status={firestore ? 'Operational' : 'Error'} Icon={Wifi} />
+                <HealthStatus title="Firebase Services" status={user ? 'Operational' : 'Error'} Icon={Wifi} />
                 <HealthStatus title="Authentication" status={isUserLoading ? 'Checking...' : user ? 'Operational' : 'Error'} Icon={ShieldCheck} />
                 <HealthStatus title="AI Services" status="Operational" Icon={Bot} />
             </CardContent>
-          </Card>
-          <Card className="lg:col-span-3">
+           </Card>
+           <Card>
             <CardHeader>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>
-                Manage users, roles, and system settings.
-              </CardDescription>
+              <CardTitle>User Role Management</CardTitle>
+              <CardDescription>Grant or revoke admin privileges.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div>
+                    <Label htmlFor="email-role">User Email</Label>
+                    <Input id="email-role" placeholder="user@example.com" value={emailToMakeAdmin} onChange={(e) => setEmailToMakeAdmin(e.target.value)} />
+                </div>
+                <div className="flex gap-2">
+                    <Button onClick={() => handleSetUserRole('admin')} disabled={isSettingRole} className="w-full">
+                        {isSettingRole ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <UserPlus className="mr-2 h-4 w-4" />}
+                        Make Admin
+                    </Button>
+                     <Button onClick={() => handleSetUserRole('user')} disabled={isSettingRole} variant="secondary" className="w-full">
+                        {isSettingRole ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Shield className="mr-2 h-4 w-4" />}
+                        Make User
+                    </Button>
+                </div>
+            </CardContent>
+           </Card>
+           <Card className="lg:col-span-3">
+             <CardHeader>
+                <CardTitle>File Storage</CardTitle>
+                <CardDescription>Upload and manage documents.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex items-center justify-center h-[20vh] border-2 border-dashed rounded-lg">
-                <div className="text-center">
-                  <h3 className="text-xl font-bold tracking-tight">
-                    Coming Soon
-                  </h3>
-                  <p className="text-muted-foreground">
-                    User and role management features will be available here.
-                  </p>
-                </div>
-              </div>
+                <FileUpload onUploadComplete={onUploadComplete} />
             </CardContent>
+           </Card>
+          <Card className="lg:col-span-3">
+            <CardHeader>
+                <CardTitle>File Manager</CardTitle>
+                <CardDescription>View and manage all uploaded files.</CardDescription>
+            </CardHeader>
+             <CardContent>
+                <FileManager key={fileManagerKey} />
+             </CardContent>
           </Card>
         </div>
       </main>
