@@ -1,4 +1,3 @@
-
 'use client';
 
 import {
@@ -43,7 +42,6 @@ import { Button } from '../ui/button';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
-import { useFeatureFlags } from '@/components/FeatureFlagsContext';
 
 type NavLink = {
   href: string;
@@ -113,16 +111,11 @@ const navGroups: NavGroup[] = [
     ],
   },
   {
-    label: 'CONFIGURATION',
-    links: [
-      { href: '/dashboard/feature-flags', label: '🎛️ Feature Flags', icon: Settings },
-    ],
-  },
-  {
     label: 'System',
     links: [
       { href: '/dashboard/admin', label: 'Admin', icon: Shield },
       { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+       { href: '/dashboard/feature-flags', label: '🎛️ Feature Flags', icon: Settings },
     ],
   },
   {
@@ -136,7 +129,6 @@ const navGroups: NavGroup[] = [
 
 export function SidebarNav() {
   const pathname = usePathname();
-  const { isEnabled } = useFeatureFlags();
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(
     navGroups.reduce((acc, group) => ({ ...acc, [group.label]: true }), {})
   );
@@ -144,12 +136,6 @@ export function SidebarNav() {
   const toggleGroup = (label: string) => {
     setOpenGroups((prev) => ({ ...prev, [label]: !prev[label] }));
   };
-
-  // Filter out SHOWCASE group if neither showcase feature is enabled
-  const showcaseEnabled = isEnabled('showcaseVisualization') || isEnabled('showcaseSheets');
-  const visibleGroups = showcaseEnabled
-    ? navGroups
-    : navGroups.filter(group => group.label !== 'SHOWCASE');
 
   return (
     <SidebarMenu>
@@ -164,7 +150,7 @@ export function SidebarNav() {
         </Link>
       </SidebarMenuItem>
 
-      {visibleGroups.map((group) => (
+      {navGroups.map((group) => (
         <SidebarGroup key={group.label}>
           <Collapsible open={openGroups[group.label]} onOpenChange={() => toggleGroup(group.label)}>
             <CollapsibleTrigger asChild>
