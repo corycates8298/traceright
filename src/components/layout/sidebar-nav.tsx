@@ -24,7 +24,7 @@ import {
   Terminal,
   Sparkles,
   Sheet,
-  Analytics,
+  ChartBar,
 } from 'lucide-react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
@@ -102,7 +102,7 @@ const navGroups: NavGroup[] = [
     links: [
       { href: '/dashboard/next-gen-features', label: '✨ Next-Gen Features', icon: Sparkles, featureFlag: 'showcaseVisualization' },
       { href: '/dashboard/google-sheets-demo', label: '📊 Google Sheets Demo', icon: Sheet, featureFlag: 'showcaseSheets' },
-      { href: '/app/analytics', label: '📈 Analytics Studio', icon: Analytics, featureFlag: 'showcaseVisualization' },
+      { href: '/app/analytics', label: '📈 ChartBar Studio', icon: ChartBar, featureFlag: 'showcaseVisualization' },
 
     ],
   },
