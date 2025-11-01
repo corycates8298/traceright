@@ -1,107 +1,73 @@
-
 'use client';
 
-import { useState } from 'react';
-import { Header } from '@/components/layout/header';
-import { Button } from '@/components/ui/button';
-import { Settings2, Eye, Briefcase, CircleDotDashed, LayoutGrid, Plus } from 'lucide-react';
-import type { Layout, WidgetConfig } from '@/types';
-import AnalystView from '@/components/dashboard/analyst-view';
-import ExecutiveView from '@/components/dashboard/executive-view';
-import WarehouseOpsView from '@/components/dashboard/warehouse-ops-view';
-import CustomDashboardView from '@/components/dashboard/custom-view';
-import { useTheme } from '@/context/ThemeContext';
-import { WidgetBuilder } from '@/components/dashboard/widget-builder';
-import { useLocalStorage } from '@/hooks/use-local-storage';
+import { useAuth } from '@/components/providers/AuthProvider';
+import { Package, TrendingUp, Truck, Users } from 'lucide-react';
 
 export default function DashboardPage() {
-  const [layout, setLayout] = useState<Layout>('analyst');
-  const { setOpen } = useTheme();
-  const [isBuilderOpen, setIsBuilderOpen] = useState(false);
-  const [widgets, setWidgets] = useLocalStorage<WidgetConfig[]>('custom-dashboard-widgets', []);
+  const { user } = useAuth();
 
-  const renderLayout = () => {
-    switch (layout) {
-      case 'analyst':
-        return <AnalystView />;
-      case 'executive':
-        return <ExecutiveView />;
-      case 'warehouse':
-        return <WarehouseOpsView />;
-      case 'custom':
-        return <CustomDashboardView widgets={widgets} setWidgets={setWidgets} setIsBuilderOpen={setIsBuilderOpen} />;
-      default:
-        return <AnalystView />;
-    }
-  };
-
-  const getButtonClass = (buttonLayout: Layout) => {
-    return layout === buttonLayout ? 'outline' : 'ghost';
-  }
+  const stats = [
+    { name: 'Total Orders', value: '1,234', icon: Package, change: '+12.5%', changeType: 'positive' },
+    { name: 'Active Shipments', value: '89', icon: Truck, change: '+4.3%', changeType: 'positive' },
+    { name: 'Total Customers', value: '567', icon: Users, change: '+8.1%', changeType: 'positive' },
+    { name: 'Revenue', value: '$2.4M', icon: TrendingUp, change: '+15.3%', changeType: 'positive' },
+  ];
 
   return (
-    <div className="flex min-h-screen w-full flex-col">
-      <Header title="Dashboard" />
-      <div className="flex flex-col sticky top-14 sm:top-16 z-10">
-        <div className="flex flex-wrap items-center justify-between gap-4 border-b bg-background px-4 sm:px-6 py-4">
-            <h2 className="text-muted-foreground text-lg hidden md:block">
-                30,000-foot view of your supply chain operations
-            </h2>
-            <div className="flex flex-wrap items-center gap-2">
-                <Button
-                variant={getButtonClass('analyst')}
-                size="sm"
-                onClick={() => setLayout('analyst')}
-                >
-                <Eye className="mr-2 h-4 w-4" />
-                Analyst View
-                </Button>
-                <Button
-                variant={getButtonClass('executive')}
-                size="sm"
-                onClick={() => setLayout('executive')}
-                >
-                <Briefcase className="mr-2 h-4 w-4" />
-                Executive Summary
-                </Button>
-                <Button
-                variant={getButtonClass('warehouse')}
-                size="sm"
-                onClick={() => setLayout('warehouse')}
-                >
-                <CircleDotDashed className="mr-2 h-4 w-4" />
-                Warehouse Ops
-                </Button>
-                <Button
-                variant={getButtonClass('custom')}
-                size="sm"
-                onClick={() => setLayout('custom')}
-                >
-                <LayoutGrid className="mr-2 h-4 w-4" />
-                Custom
-                {layout === 'custom' && widgets.length > 0 && (
-                    <span className="ml-2 bg-primary/20 text-primary rounded-full px-2 py-0.5 text-xs">
-                        {widgets.length}
-                    </span>
-                )}
-                </Button>
-                {layout === 'custom' && (
-                    <Button size="sm" onClick={() => setIsBuilderOpen(true)}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Widget
-                    </Button>
-                )}
-                <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-                <Settings2 className="mr-2 h-4 w-4" />
-                Customize
-                </Button>
+    <div className="space-y-6">
+      {/* Welcome Header */}
+      <div>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Welcome back, {user?.email?.split('@')[0] || 'User'}!
+        </h1>
+        <p className="mt-2 text-gray-600">
+          Here's what's happening with your supply chain today.
+        </p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={stat.name}
+              className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow"
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-2 bg-blue-50 rounded-lg">
+                  <Icon className="h-6 w-6 text-blue-600" />
+                </div>
+                <span className="text-sm font-medium text-green-600">
+                  {stat.change}
+                </span>
+              </div>
+              <h3 className="text-sm font-medium text-gray-600">{stat.name}</h3>
+              <p className="mt-2 text-3xl font-bold text-gray-900">{stat.value}</p>
             </div>
+          );
+        })}
+      </div>
+
+      {/* Recent Activity */}
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">
+          Recent Activity
+        </h2>
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex items-start gap-3 pb-4 border-b border-gray-100 last:border-0">
+              <div className="w-2 h-2 bg-blue-600 rounded-full mt-2" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-gray-900">
+                  Order #{1000 + i} delivered successfully
+                </p>
+                <p className="text-xs text-gray-500 mt-1">{i} hours ago</p>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-      <main className="flex-1 p-4 sm:p-6">
-        {renderLayout()}
-      </main>
-      <WidgetBuilder isOpen={isBuilderOpen} setIsOpen={setIsBuilderOpen} setWidgets={setWidgets} />
     </div>
   );
 }

@@ -1,37 +1,9 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    
-    // Helper functions
-    function isSignedIn() {
-      return request.auth != null;
-    }
-    
-    function isAdmin() {
-      return isSignedIn() && 
-             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
-    }
-    
-    function isOwner(userId) {
-      return request.auth.uid == userId;
-    }
-    
-    // Users collection
-    match /users/{userId} {
-      // Anyone can read their own profile
-      allow read: if isOwner(userId);
-      // Anyone can create their own profile
-      allow create: if isOwner(userId);
-      // Users can update their own profile, admins can update anyone
-      allow update: if isOwner(userId) || isAdmin();
-      // Only admins can delete
-      allow delete: if isAdmin();
-    }
-    
-    // All other collections - authenticated users can read, admins can write
+    // Allow all authenticated users full access (DEVELOPMENT ONLY)
     match /{document=**} {
-      allow read: if isSignedIn();
-      allow write: if isAdmin();
+      allow read, write: if request.auth != null;
     }
   }
 }
