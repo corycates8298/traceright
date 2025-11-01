@@ -16,7 +16,7 @@ import {
   Bot,
   ScanSearch,
   FileText,
-  TrendingUp,
+  BarChart3,
   BrainCircuit,
   Map,
   ClipboardList,
@@ -80,11 +80,12 @@ const navGroups: NavGroup[] = [
     links: [
       { href: '/dashboard/digital-twin', label: 'Digital Twin', icon: Map },
       { href: '/dashboard/dashboard-3d', label: 'Dashboard 3D', icon: Box },
+      { href: '/dashboard/cyberpunk', label: 'Cyberpunk', icon: Terminal },
       { href: '/dashboard/black-reports', label: 'Black Reports', icon: Terminal },
       {
         href: '/dashboard/demand-forecasting',
         label: 'Demand Forecasting',
-        icon: TrendingUp,
+        icon: BarChart3,
       },
       {
         href: '/dashboard/visual-inspection',
