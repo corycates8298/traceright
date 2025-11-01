@@ -1,279 +1,37 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    /**
-     * @description Controls access to user profile documents. Only the user with the matching UID can read or write their profile.
-     * @path /users/{userId}
-     * @allow (create, update, delete) if request.auth.uid == userId
-     * @allow (get) if request.auth.uid == userId
-     * @deny (get) if request.auth.uid != userId
-     * @deny (create, update, delete) if request.auth.uid != userId
-     * @principle Enforces document ownership for user profiles.
-     */
+    
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isSignedIn() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    // Users collection
     match /users/{userId} {
-      function isOwner(userId) {
-        return request.auth.uid == userId;
-      }
-
-      allow get: if isOwner(userId);
-      allow list: if false; // Listing users is not permitted.
-      allow create: if request.auth.uid == userId;
-      allow update: if isOwner(userId);
-      allow delete: if isOwner(userId);
+      // Anyone can read their own profile
+      allow read: if isOwner(userId);
+      // Anyone can create their own profile
+      allow create: if isOwner(userId);
+      // Users can update their own profile, admins can update anyone
+      allow update: if isOwner(userId) || isAdmin();
+      // Only admins can delete
+      allow delete: if isAdmin();
     }
-
-    /**
-     * @description Controls access to supplier documents.
-     * @path /suppliers/{supplierId}
-     * @allow (get, list) if true
-     * @allow (create) if isSignedIn()
-     * @allow (update, delete) if isSignedIn()
-     * @deny (create) if !isSignedIn()
-     * @deny (update, delete) if !isSignedIn()
-     * @principle Allows public reads, but requires authentication for writes.
-     */
-    match /suppliers/{supplierId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Controls access to documents related to a specific supplier.
-     * @path /suppliers/{supplierId}/documents/{documentId}
-     * @allow (get, list) if true
-     * @allow (create) if isSignedIn()
-     * @allow (update, delete) if isSignedIn()
-     * @deny (create) if !isSignedIn()
-     * @deny (update, delete) if !isSignedIn()
-     * @principle Allows public reads, but requires authentication for writes.
-     */
-    match /suppliers/{supplierId}/documents/{documentId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Controls access to material documents.
-     * @path /materials/{materialId}
-     * @allow (get, list) if true
-     * @allow (create) if isSignedIn()
-     * @allow (update, delete) if isSignedIn()
-     * @deny (create) if !isSignedIn()
-     * @deny (update, delete) if !isSignedIn()
-     * @principle Allows public reads, but requires authentication for writes.
-     */
-    match /materials/{materialId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Controls access to forecasts related to a specific material.
-     * @path /materials/{materialId}/forecasts/{forecastId}
-     * @allow (get, list) if true
-     * @allow (create) if isSignedIn()
-     * @allow (update, delete) if isSignedIn()
-     * @deny (create) if !isSignedIn()
-     * @deny (update, delete) if !isSignedIn()
-     * @principle Allows public reads, but requires authentication for writes.
-     */
-    match /materials/{materialId}/forecasts/{forecastId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Controls access to order documents.
-     * @path /orders/{orderId}
-     * @allow (get, list) if true
-     * @allow (create) if isSignedIn()
-     * @allow (update, delete) if isSignedIn()
-     * @deny (create) if !isSignedIn()
-     * @deny (update, delete) if !isSignedIn()
-     * @principle Allows public reads, but requires authentication for writes.
-     */
-    match /orders/{orderId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Controls access to UI schema documents.
-     * @path /uiSchemas/{uiSchemaId}
-     * @allow (get, list) if true
-     * @allow (create) if isSignedIn()
-     * @allow (update, delete) if isSignedIn()
-     * @deny (create) if !isSignedIn()
-     * @deny (update, delete) if !isSignedIn()
-     * @principle Allows public reads, but requires authentication for writes.
-     */
-    match /uiSchemas/{uiSchemaId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Controls access to inventory documents.
-     * @path /inventory/{inventoryId}
-     * @allow (get, list) if true
-     * @allow (create) if isSignedIn()
-     * @allow (update, delete) if isSignedIn()
-     * @deny (create) if !isSignedIn()
-     * @deny (update, delete) if !isSignedIn()
-     * @principle Allows public reads, but requires authentication for writes.
-     */
-    match /inventory/{inventoryId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Controls access to product documents.
-     * @path /products/{productId}
-     * @allow (get, list) if true
-     * @allow (create) if isSignedIn()
-     * @allow (update, delete) if isSignedIn()
-     * @deny (create) if !isSignedIn()
-     * @deny (update, delete) if !isSignedIn()
-     * @principle Allows public reads, but requires authentication for writes.
-     */
-    match /products/{productId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-    }
-
-    /**
-     * @description Controls access to recipe documents.
-     * @path /recipes/{recipeId}
-     * @allow (get, list) if true
-     * @allow (create) if isSignedIn()
-     * @allow (update, delete) if isSignedIn()
-     * @deny (create) if !isSignedIn()
-     * @deny (update, delete) if !isSignedIn()
-     * @principle Allows public reads, but requires authentication for writes.
-     */
-    match /recipes/{recipeId} {
-        function isSignedIn() {
-            return request.auth != null;
-        }
-        allow get, list: if true;
-        allow create: if isSignedIn();
-        allow update: if isSignedIn();
-        allow delete: if isSignedIn();
-    }
-
-    match /warehouses/{warehouseId} {
-      function isSignedIn() { return request.auth != null; }
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
-    }
-
-    match /batches/{batchId} {
-      function isSignedIn() { return request.auth != null; }
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
-    }
-
-    match /shipments/{shipmentId} {
-      function isSignedIn() { return request.auth != null; }
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
-    }
-
-    match /inventoryLocations/{locationId} {
-      function isSignedIn() { return request.auth != null; }
-      allow get, list: if true;
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
-    }
-
-    match /inventoryAdjustments/{adjustmentId} {
-      function isSignedIn() { return request.auth != null; }
-      allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
-    }
-
-    match /assetManagement/{assetId} {
-      function isSignedIn() { return request.auth != null; }
-      allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
-    }
-
-    match /payments/{paymentId} {
-      function isSignedIn() { return request.auth != null; }
-      allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
-    }
-
-    match /auditLog/{logId} {
-      function isSignedIn() { return request.auth != null; }
-      allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if false;
-      allow delete: if false;
-    }
-
-    match /governanceDocs/{docId} {
-      function isSignedIn() { return request.auth != null; }
-      allow get, list: if isSignedIn();
-      allow create: if isSignedIn();
-      allow update: if isSignedIn() && resource != null;
-      allow delete: if isSignedIn() && resource != null;
+    
+    // All other collections - authenticated users can read, admins can write
+    match /{document=**} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
   }
 }
