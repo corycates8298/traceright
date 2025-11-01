@@ -141,11 +141,13 @@ export function FeatureFlagsManager() {
 
   const handleExport = () => {
     const config = exportConfig();
-    navigator.clipboard.writeText(config);
-    toast({
-      title: 'Configuration Exported',
-      description: 'Copied to clipboard!',
-    });
+    if (typeof window !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(config);
+      toast({
+        title: 'Configuration Exported',
+        description: 'Copied to clipboard!',
+      });
+    }
   };
 
   const handleImport = () => {
