@@ -1,35 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: 'export',
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
-       {
-        protocol: 'https',
-        hostname: 'picsum.photos',
-      },
-    ],
-  },
-  typescript: {
-    ignoreBuildErrors: true,
+    unoptimized: true,
   },
   eslint: {
     ignoreDuringBuilds: true,
   },
-  webpack: (config, { dev }) => {
-    if (dev) {
-      config.output = {
-        ...config.output,
-        chunkLoadTimeout: 600000,
-      };
-    }
-    return config;
+  typescript: {
+    ignoreBuildErrors: true,
   },
-  experimental: {
-    webpackBuildWorker: false,
-  },
-};
+}
 
-module.exports = nextConfig;
+module.exports = nextConfig
