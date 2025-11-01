@@ -1,10 +1,10 @@
 'use client';
 
-import { useAuth } from '@/components/providers/AuthProvider';
+import { useUser } from '@/firebase';
 import { Package, TrendingUp, Truck, Users } from 'lucide-react';
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user } = useUser();
 
   const stats = [
     { name: 'Total Orders', value: '1,234', icon: Package, change: '+12.5%', changeType: 'positive' },

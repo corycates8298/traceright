@@ -1,9 +1,11 @@
 'use client';
 
 import { SidebarNav } from '@/components/layout/sidebar-nav';
-import { useAuth } from '@/components/providers/AuthProvider';
+import { useUser, useAuth } from '@/firebase';
+import { signOut as firebaseSignOut } from 'firebase/auth';
 import { LogOut, Menu, X } from 'lucide-react';
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 export default function DashboardLayout({
   children,
@@ -11,7 +13,18 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const { user, signOut } = useAuth();
+  const { user } = useUser();
+  const auth = useAuth();
+  const router = useRouter();
+
+  const handleSignOut = async () => {
+    try {
+      await firebaseSignOut(auth);
+      router.push('/login');
+    } catch (error) {
+      console.error('Sign out error:', error);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -72,7 +85,7 @@ export default function DashboardLayout({
               {user?.email}
             </span>
             <button
-              onClick={signOut}
+              onClick={handleSignOut}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
             >
               <LogOut className="h-4 w-4" />

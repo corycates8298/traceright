@@ -27,12 +27,10 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
         <FirebaseClientProvider>
-          <AuthProvider>
-            <ThemeProvider>
-              {children}
-              <Toaster />
-            </ThemeProvider>
-          </AuthProvider>
+          <ThemeProvider>
+            {children}
+            <Toaster />
+          </ThemeProvider>
         </FirebaseClientProvider>
       </body>
     </html>
